@@ -1,0 +1,42 @@
+<!-- MODAL CONTAINER (reusable for details, affected pages/images, etc.) -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg max-w-lg w-full relative modal-content p-6">
+    <button id="modalClose" class="absolute top-2 right-2 text-neutral-500 hover:text-neutral-700">
+      <span class="material-icons">close</span>
+    </button>
+    <div id="modalBody">
+      <!-- Dynamic modal content will be injected here -->
+      <h2 class="text-lg font-semibold mb-4">Details</h2>
+      <div id="modalDetailsContent">
+        <!-- Details/content go here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERFORMANCE CHART CONTAINER -->
+<div class="material-card bg-white p-5" id="performanceChartCard">
+  <h3 class="text-lg font-medium text-neutral-800 mb-4">Performance Trends</h3>
+  <canvas id="performanceChart" width="700" height="350"></canvas>
+</div>
+
+<!-- DEVICE BREAKDOWN CHART CONTAINER -->
+<div class="material-card bg-white p-5" id="deviceBreakdownChartCard">
+  <h3 class="text-lg font-medium text-neutral-800 mb-4">Device Breakdown</h3>
+  <canvas id="deviceBreakdownChart" width="400" height="300"></canvas>
+</div>
+
+<!-- OPPORTUNITIES LIST (sortable, as referenced in JS) -->
+<div class="material-card bg-white p-5 mt-8" id="opportunitiesListCard">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium text-neutral-800">Improvement Opportunities</h3>
+    <select id="opportunitySortSelect" class="border border-neutral-300 rounded px-2 py-1">
+      <option value="impact">Impact</option>
+      <option value="difficulty">Difficulty</option>
+      <option value="recent">Most Recent</option>
+    </select>
+  </div>
+  <div id="opportunitiesList" class="space-y-4">
+    <!-- Opportunities will be generated here -->
+  </div>
+</div>
