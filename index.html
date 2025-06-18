@@ -1,1191 +1,242 @@
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GSC Insights Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              50: '#e3f2fd',
-              100: '#bbdefb',
-              200: '#90caf9',
-              300: '#64b5f6',
-              400: '#42a5f5',
-              500: '#2196f3',
-              600: '#1e88e5',
-              700: '#1976d2',
-              800: '#1565c0',
-              900: '#0d47a1',
-            },
-            secondary: {
-              50: '#fce4ec',
-              100: '#f8bbd0',
-              200: '#f48fb1',
-              300: '#f06292',
-              400: '#ec407a',
-              500: '#e91e63',
-              600: '#d81b60',
-              700: '#c2185b',
-              800: '#ad1457',
-              900: '#880e4f',
-            },
-            neutral: {
-              50: '#fafafa',
-              100: '#f5f5f5',
-              200: '#eeeeee',
-              300: '#e0e0e0',
-              400: '#bdbdbd',
-              500: '#9e9e9e',
-              600: '#757575',
-              700: '#616161',
-              800: '#424242',
-              900: '#212121',
-            },
-          },
-        },
-      },
-    }
-  </script>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #f8fafc;
-    }
-    
-    .material-card {
-      border-radius: 16px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      transition: box-shadow 0.3s ease;
-    }
-    
-    .material-card:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-    }
-    
-    .material-btn {
-      border-radius: 20px;
-      text-transform: uppercase;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .material-btn:hover {
-      transform: translateY(-1px);
-    }
-    
-    .tab-active {
-      color: #1976d2;
-      border-bottom: 2px solid #1976d2;
-    }
-    
-    .progress-bar {
-      height: 4px;
-      border-radius: 2px;
-    }
-    
-    .chart-container {
-      height: 250px;
-      position: relative;
-    }
-    
-    .tooltip {
-      position: absolute;
-      background: white;
-      padding: 8px 12px;
-      border-radius: 4px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      font-size: 12px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 10;
-    }
-    
-    .data-point:hover + .tooltip {
-      opacity: 1;
-    }
-    
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      transform: scale(0);
-      animation: ripple 0.6s linear;
-      background-color: rgba(255, 255, 255, 0.7);
-    }
-    
-    @keyframes ripple {
-      to {
-        transform: scale(4);
-        opacity: 0;
-      }
-    }
-    
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: skeleton-loading 1.5s infinite;
-    }
-    
-    @keyframes skeleton-loading {
-      0% {
-        background-position: 200% 0;
-      }
-      100% {
-        background-position: -200% 0;
-      }
-    }
-
-    .dropdown {
-      position: relative;
-    }
-
-    .dropdown-content {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 10;
-      min-width: 200px;
-      display: none;
-    }
-
-    .dropdown-content.show {
-      display: block;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .date-picker {
-      position: relative;
-    }
-
-    .date-picker-calendar {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 10;
-      width: 300px;
-      display: none;
-      padding: 12px;
-    }
-
-    .date-picker-calendar.show {
-      display: block;
-    }
-
-    .calendar-day {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 50%;
-    }
-
-    .calendar-day:hover {
-      background-color: #e3f2fd;
-    }
-
-    .calendar-day.selected {
-      background-color: #1976d2;
-      color: white;
-    }
-
-    .calendar-day.today {
-      border: 1px solid #1976d2;
-    }
-
-    .calendar-day.disabled {
-      color: #bdbdbd;
-      cursor: not-allowed;
-    }
-
-    .notification-badge {
-      position: absolute;
-      top: 1px;
-      right: 1px;
-      height: 16px;
-      width: 16px;
-      background-color: #e91e63;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 10px;
-      font-weight: bold;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-content {
-      background-color: white;
-      border-radius: 16px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      transform: translateY(20px);
-      transition: transform 0.3s ease;
-    }
-
-    .modal.show .modal-content {
-      transform: translateY(0);
-    }
-
-    /* Tooltip styles */
-    .has-tooltip {
-      position: relative;
-    }
-
-    .tooltip-text {
-      visibility: hidden;
-      position: absolute;
-      z-index: 100;
-      background-color: #424242;
-      color: white;
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px 10px;
-      bottom: 125%;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      white-space: nowrap;
-      font-size: 12px;
-    }
-
-    .has-tooltip:hover .tooltip-text {
-      visibility: visible;
-      opacity: 1;
-    }
-
-    /* Animation for chart loading */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.5s ease-in;
-    }
-
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #a1a1a1;
-    }
-
-    /* File upload styling */
-    .file-upload {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-
-    .file-upload input[type=file] {
-      position: absolute;
-      top: 0;
-      right: 0;
-      min-width: 100%;
-      min-height: 100%;
-      font-size: 100px;
-      text-align: right;
-      filter: alpha(opacity=0);
-      opacity: 0;
-      outline: none;
-      background: white;
-      cursor: pointer;
-      display: block;
-    }
-
-    /* GA4 specific styles */
-    .ga4-metric-card {
-      transition: all 0.3s ease;
-    }
-
-    .ga4-metric-card:hover {
-      transform: translateY(-5px);
-    }
-
-    /* Indexing status styles */
-    .status-indicator {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-    }
-
-    .status-good {
-      background-color: #4caf50;
-    }
-
-    .status-warning {
-      background-color: #ff9800;
-    }
-
-    .status-error {
-      background-color: #f44336;
-    }
-
-    /* Opportunities calculator styles */
-    .opportunity-slider {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 3px;
-      background: #e0e0e0;
-      outline: none;
-    }
-
-    .opportunity-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #1976d2;
-      cursor: pointer;
-    }
-
-    .opportunity-slider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #1976d2;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body class="min-h-screen">
-  <div id="app" class="flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-600" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-          </svg>
-          <h1 class="text-xl font-medium text-neutral-800">GSC Insights</h1>
-        </div>
-        <div class="flex items-center space-x-4">
-          <div class="relative dropdown">
-            <button id="notificationBtn" class="p-2 rounded-full hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <span class="material-icons text-neutral-600">notifications</span>
-              <span class="notification-badge">3</span>
-            </button>
-            <div id="notificationDropdown" class="dropdown-content">
-              <div class="p-3 border-b border-neutral-200">
-                <h3 class="font-medium text-neutral-800">Notifications</h3>
-              </div>
-              <div class="max-h-80 overflow-y-auto">
-                <div class="p-3 border-b border-neutral-100 hover:bg-neutral-50">
-                  <div class="flex items-start">
-                    <span class="material-icons text-red-500 mr-2">error</span>
-                    <div>
-                      <p class="text-sm font-medium text-neutral-800">Critical Error Detected</p>
-                      <p class="text-xs text-neutral-600 mt-1">7 broken links found on your site</p>
-                      <p class="text-xs text-neutral-500 mt-1">2 hours ago</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-3 border-b border-neutral-100 hover:bg-neutral-50">
-                  <div class="flex items-start">
-                    <span class="material-icons text-green-500 mr-2">trending_up</span>
-                    <div>
-                      <p class="text-sm font-medium text-neutral-800">Traffic Increase</p>
-                      <p class="text-xs text-neutral-600 mt-1">Your site traffic increased by 15% this week</p>
-                      <p class="text-xs text-neutral-500 mt-1">1 day ago</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="p-3 hover:bg-neutral-50">
-                  <div class="flex items-start">
-                    <span class="material-icons text-blue-500 mr-2">update</span>
-                    <div>
-                      <p class="text-sm font-medium text-neutral-800">Weekly Report Ready</p>
-                      <p class="text-xs text-neutral-600 mt-1">Your weekly performance report is ready</p>
-                      <p class="text-xs text-neutral-500 mt-1">2 days ago</p>
+                      <p class="text-sm text-neutral-600 mt-1">5 high-performing pages have fewer than 3 internal links pointing to them. Improving internal linking could boost their visibility.</p>
+                      <div class="mt-3 flex items-center justify-between">
+                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="internal-linking">
+                          <span class="material-icons text-sm mr-1">visibility</span>
+                          View Affected Pages
+                        </button>
+                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm view-suggestions-btn" data-issue="internal-linking">View Suggestions</button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="p-2 border-t border-neutral-200">
-                <button class="w-full text-center text-sm text-primary-600 py-1 hover:bg-primary-50 rounded">
-                  View all notifications
-                </button>
-              </div>
             </div>
-          </div>
-          <div class="relative dropdown">
-            <button id="profileBtn" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
-              <div class="h-8 w-8 rounded-full bg-primary-700 flex items-center justify-center text-white">
-                <span class="text-sm font-medium">JS</span>
-              </div>
-              <span class="hidden md:inline text-sm font-medium text-neutral-700">John Smith</span>
-              <span class="material-icons text-neutral-500 text-sm">arrow_drop_down</span>
-            </button>
-            <div id="profileDropdown" class="dropdown-content">
-              <div class="p-3 border-b border-neutral-200">
-                <div class="flex items-center space-x-3">
-                  <div class="h-10 w-10 rounded-full bg-primary-700 flex items-center justify-center text-white">
-                    <span class="text-sm font-medium">JS</span>
-                  </div>
-                  <div>
-                    <p class="font-medium text-neutral-800">John Smith</p>
-                    <p class="text-sm text-neutral-600">john.smith@example.com</p>
-                  </div>
-                </div>
-              </div>
-              <div class="py-1">
-                <a href="#" class="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  <span class="material-icons text-neutral-500 mr-3 text-sm">account_circle</span>
-                  My Profile
-                </a>
-                <a href="#" class="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  <span class="material-icons text-neutral-500 mr-3 text-sm">settings</span>
-                  Settings
-                </a>
-                <a href="#" class="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  <span class="material-icons text-neutral-500 mr-3 text-sm">help</span>
-                  Help Center
-                </a>
-              </div>
-              <div class="py-1 border-t border-neutral-200">
-                <a href="#" class="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
-                  <span class="material-icons text-neutral-500 mr-3 text-sm">logout</span>
-                  Sign Out
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-6">
-      <!-- Site Selector -->
-      <div class="mb-6">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div class="mb-4 md:mb-0">
-            <h2 class="text-2xl font-medium text-neutral-800">Search Console Insights</h2>
-            <p class="text-neutral-600">Analyze your website's performance in Google Search</p>
-          </div>
-          <div class="relative dropdown">
-            <div id="siteSelector" class="material-card bg-white px-4 py-2 flex items-center justify-between cursor-pointer min-w-[240px]">
-              <div class="flex items-center">
-                <span class="material-icons text-neutral-500 mr-2">language</span>
-                <span id="selectedSite" class="text-neutral-800 font-medium">example.com</span>
+            <!-- Opportunity Calculator -->
+            <div class="material-card bg-white p-5">
+              <div class="mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Opportunity Calculator</h3>
+                <p class="text-sm text-neutral-600 mt-1">Estimate potential traffic gains from implementing improvements</p>
               </div>
-              <span class="material-icons text-neutral-500">arrow_drop_down</span>
-            </div>
-            <div id="siteDropdown" class="dropdown-content w-full">
-              <ul class="py-1">
-                <li data-site="example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
-                  <span class="material-icons text-neutral-500 mr-2">language</span>
-                  <span>example.com</span>
-                </li>
-                <li data-site="blog.example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
-                  <span class="material-icons text-neutral-500 mr-2">language</span>
-                  <span>blog.example.com</span>
-                </li>
-                <li data-site="store.example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
-                  <span class="material-icons text-neutral-500 mr-2">language</span>
-                  <span>store.example.com</span>
-                </li>
-                <li id="addNewSite" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer text-primary-600">
-                  <span class="material-icons text-primary-600 mr-2">add_circle</span>
-                  <span>Add new property</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Date Range Selector -->
-      <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <div class="flex space-x-2 mb-4 md:mb-0">
-          <button class="date-range-btn material-btn px-4 py-2 bg-primary-600 text-white" data-range="28">Last 28 days</button>
-          <button class="date-range-btn material-btn px-4 py-2 bg-white text-neutral-700 border border-neutral-300" data-range="90">Last 3 months</button>
-          <button class="date-range-btn material-btn px-4 py-2 bg-white text-neutral-700 border border-neutral-300" data-range="180">Last 6 months</button>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="relative date-picker">
-            <input type="text" id="startDate" class="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 w-36" placeholder="2023-01-01" readonly />
-            <span class="material-icons absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 cursor-pointer">calendar_today</span>
-            <div id="startDateCalendar" class="date-picker-calendar">
-              <div class="flex items-center justify-between mb-4">
-                <button id="prevMonthStart" class="p-1 hover:bg-neutral-100 rounded-full">
-                  <span class="material-icons">chevron_left</span>
-                </button>
-                <h4 id="currentMonthYearStart" class="font-medium">January 2023</h4>
-                <button id="nextMonthStart" class="p-1 hover:bg-neutral-100 rounded-full">
-                  <span class="material-icons">chevron_right</span>
-                </button>
-              </div>
-              <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                <span class="text-xs text-neutral-500">Su</span>
-                <span class="text-xs text-neutral-500">Mo</span>
-                <span class="text-xs text-neutral-500">Tu</span>
-                <span class="text-xs text-neutral-500">We</span>
-                <span class="text-xs text-neutral-500">Th</span>
-                <span class="text-xs text-neutral-500">Fr</span>
-                <span class="text-xs text-neutral-500">Sa</span>
-              </div>
-              <div id="startDateDays" class="grid grid-cols-7 gap-1">
-                <!-- Calendar days will be inserted here by JS -->
-              </div>
-            </div>
-          </div>
-          <span class="text-neutral-500">to</span>
-          <div class="relative date-picker">
-            <input type="text" id="endDate" class="px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 w-36" placeholder="2023-01-28" readonly />
-            <span class="material-icons absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 cursor-pointer">calendar_today</span>
-            <div id="endDateCalendar" class="date-picker-calendar">
-              <div class="flex items-center justify-between mb-4">
-                <button id="prevMonthEnd" class="p-1 hover:bg-neutral-100 rounded-full">
-                  <span class="material-icons">chevron_left</span>
-                </button>
-                <h4 id="currentMonthYearEnd" class="font-medium">January 2023</h4>
-                <button id="nextMonthEnd" class="p-1 hover:bg-neutral-100 rounded-full">
-                  <span class="material-icons">chevron_right</span>
-                </button>
-              </div>
-              <div class="grid grid-cols-7 gap-1 text-center mb-2">
-                <span class="text-xs text-neutral-500">Su</span>
-                <span class="text-xs text-neutral-500">Mo</span>
-                <span class="text-xs text-neutral-500">Tu</span>
-                <span class="text-xs text-neutral-500">We</span>
-                <span class="text-xs text-neutral-500">Th</span>
-                <span class="text-xs text-neutral-500">Fr</span>
-                <span class="text-xs text-neutral-500">Sa</span>
-              </div>
-              <div id="endDateDays" class="grid grid-cols-7 gap-1">
-                <!-- Calendar days will be inserted here by JS -->
-              </div>
-            </div>
-          </div>
-          <button id="applyDateRange" class="material-btn px-4 py-2 bg-primary-50 text-primary-700">Apply</button>
-        </div>
-      </div>
-
-      <!-- Performance Overview Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total Clicks -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Total Clicks</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times users clicked through to your site">
-              info_outline
-              <span class="tooltip-text">Number of times users clicked through to your site</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="totalClicks">24,583</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="clicksChange">12.4%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-end space-x-1">
-              <div class="w-2 h-6 bg-primary-200 rounded-t"></div>
-              <div class="w-2 h-8 bg-primary-300 rounded-t"></div>
-              <div class="w-2 h-5 bg-primary-200 rounded-t"></div>
-              <div class="w-2 h-7 bg-primary-300 rounded-t"></div>
-              <div class="w-2 h-9 bg-primary-400 rounded-t"></div>
-              <div class="w-2 h-10 bg-primary-500 rounded-t"></div>
-              <div class="w-2 h-12 bg-primary-600 rounded-t"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Total Impressions -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Total Impressions</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times your site appeared in search results">
-              info_outline
-              <span class="tooltip-text">Number of times your site appeared in search results</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="totalImpressions">342,129</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="impressionsChange">8.7%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-end space-x-1">
-              <div class="w-2 h-7 bg-secondary-200 rounded-t"></div>
-              <div class="w-2 h-9 bg-secondary-300 rounded-t"></div>
-              <div class="w-2 h-8 bg-secondary-200 rounded-t"></div>
-              <div class="w-2 h-10 bg-secondary-300 rounded-t"></div>
-              <div class="w-2 h-9 bg-secondary-400 rounded-t"></div>
-              <div class="w-2 h-11 bg-secondary-500 rounded-t"></div>
-              <div class="w-2 h-12 bg-secondary-600 rounded-t"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Average CTR -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Average CTR</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Click-through rate: clicks divided by impressions">
-              info_outline
-              <span class="tooltip-text">Click-through rate: clicks divided by impressions</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="averageCTR">7.2%</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-red-500 text-sm">arrow_downward</span>
-                <span class="text-red-500 text-sm font-medium" id="ctrChange">0.5%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 w-24 relative">
-              <svg viewBox="0 0 100 100" class="w-full h-full">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
-                <circle id="ctrCircle" cx="50" cy="50" r="45" fill="none" stroke="#9c27b0" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="262.5" transform="rotate(-90 50 50)" />
-                <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="bold" fill="#9c27b0" id="ctrText">7.2%</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Average Position -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Average Position</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Average ranking position in search results">
-              info_outline
-              <span class="tooltip-text">Average ranking position in search results</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="averagePosition">14.3</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="positionChange">2.1</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-center">
-              <div class="flex items-center space-x-1">
-                <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">1</div>
-                <div class="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center text-green-800 text-xs">5</div>
-                <div class="w-6 h-6 rounded-full bg-yellow-200 flex items-center justify-center text-yellow-800 text-xs">10</div>
-                <div class="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-800 text-xs font-bold" id="positionIndicator">14</div>
-                <div class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-800 text-xs">20</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main Tabs -->
-      <div class="mb-6">
-        <div class="border-b border-neutral-200">
-          <nav class="flex space-x-8 overflow-x-auto">
-            <button class="tab-btn tab-active px-1 py-4 text-sm font-medium focus:outline-none" data-tab="performance">Performance</button>
-            <button class="tab-btn text-neutral-600 px-1 py-4 text-sm font-medium hover:text-neutral-800 focus:outline-none" data-tab="opportunities">Opportunities</button>
-            <button class="tab-btn text-neutral-600 px-1 py-4 text-sm font-medium hover:text-neutral-800 focus:outline-none" data-tab="errors">Errors</button>
-            <button class="tab-btn text-neutral-600 px-1 py-4 text-sm font-medium hover:text-neutral-800 focus:outline-none" data-tab="indexing">Indexing</button>
-            <button class="tab-btn text-neutral-600 px-1 py-4 text-sm font-medium hover:text-neutral-800 focus:outline-none" data-tab="analytics">Analytics</button>
-          </nav>
-        </div>
-      </div>
-
-      <!-- Tab Content -->
-      <div id="tabContent">
-        <!-- Performance Tab Content -->
-        <div id="performance" class="tab-content active">
-          <!-- Performance Charts -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Main Performance Chart -->
-            <div class="material-card bg-white p-5 lg:col-span-2">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-neutral-800">Performance Trends</h3>
-                <div class="flex items-center space-x-4">
-                  <div class="flex items-center space-x-2">
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-primary-500 mr-1"></span>
-                      <span class="text-sm text-neutral-600">Clicks</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-secondary-500 mr-1"></span>
-                      <span class="text-sm text-neutral-600">Impressions</span>
-                    </div>
-                  </div>
-                  <select id="chartMetricSelector" class="text-sm border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value="clicks-impressions">Clicks & Impressions</option>
-                    <option value="ctr">CTR</option>
-                    <option value="position">Position</option>
+              <div class="space-y-4">
+                <div>
+                  <label class="text-sm font-medium text-neutral-700 block mb-2">Select Improvement Area</label>
+                  <select id="improvementAreaSelect" class="w-full border border-neutral-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="meta-descriptions">Meta Descriptions</option>
+                    <option value="page-speed">Page Speed</option>
+                    <option value="mobile-optimization">Mobile Optimization</option>
+                    <option value="image-optimization">Image Optimization</option>
+                    <option value="internal-linking">Internal Linking</option>
                   </select>
                 </div>
-              </div>
-              <div class="chart-container" id="performanceChart">
-                <svg width="100%" height="100%" viewBox="0 0 800 250">
-                  <!-- Grid lines -->
-                  <line x1="50" y1="220" x2="750" y2="220" stroke="#e0e0e0" stroke-width="1" />
-                  <line x1="50" y1="170" x2="750" y2="170" stroke="#e0e0e0" stroke-width="1" />
-                  <line x1="50" y1="120" x2="750" y2="120" stroke="#e0e0e0" stroke-width="1" />
-                  <line x1="50" y1="70" x2="750" y2="70" stroke="#e0e0e0" stroke-width="1" />
-                  <line x1="50" y1="20" x2="750" y2="20" stroke="#e0e0e0" stroke-width="1" />
-                  
-                  <!-- Y-axis labels -->
-                  <text x="45" y="220" text-anchor="end" font-size="12" fill="#616161">0</text>
-                  <text x="45" y="170" text-anchor="end" font-size="12" fill="#616161">250</text>
-                  <text x="45" y="120" text-anchor="end" font-size="12" fill="#616161">500</text>
-                  <text x="45" y="70" text-anchor="end" font-size="12" fill="#616161">750</text>
-                  <text x="45" y="20" text-anchor="end" font-size="12" fill="#616161">1000</text>
-                  
-                  <!-- X-axis labels -->
-                  <text x="50" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 1</text>
-                  <text x="150" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 5</text>
-                  <text x="250" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 10</text>
-                  <text x="350" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 15</text>
-                  <text x="450" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 20</text>
-                  <text x="550" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 25</text>
-                  <text x="650" y="240" text-anchor="middle" font-size="12" fill="#616161">Jan 30</text>
-                  <text x="750" y="240" text-anchor="middle" font-size="12" fill="#616161">Feb 1</text>
-                  
-                  <!-- Impressions line -->
-                  <path d="M50,180 L150,160 L250,140 L350,120 L450,100 L550,80 L650,70 L750,50" 
-                        fill="none" stroke="#e91e63" stroke-width="2" />
-                  
-                  <!-- Clicks line -->
-                  <path d="M50,200 L150,190 L250,180 L350,170 L450,160 L550,150 L650,140 L750,130" 
-                        fill="none" stroke="#2196f3" stroke-width="2" />
-                  
-                  <!-- Data points for impressions -->
-                  <circle cx="50" cy="180" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="150" cy="160" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="250" cy="140" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="350" cy="120" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="450" cy="100" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="550" cy="80" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="650" cy="70" r="4" fill="#e91e63" class="data-point" />
-                  <circle cx="750" cy="50" r="4" fill="#e91e63" class="data-point" />
-                  
-                  <!-- Data points for clicks -->
-                  <circle cx="50" cy="200" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="150" cy="190" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="250" cy="180" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="350" cy="170" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="450" cy="160" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="550" cy="150" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="650" cy="140" r="4" fill="#2196f3" class="data-point" />
-                  <circle cx="750" cy="130" r="4" fill="#2196f3" class="data-point" />
-                  
-                  <!-- Tooltips -->
-                  <g class="tooltip" transform="translate(50, 160)">
-                    <rect x="-50" y="-40" width="100" height="35" rx="4" fill="white" stroke="#e0e0e0" />
-                    <text x="0" y="-25" text-anchor="middle" font-size="12" fill="#212121">Jan 1, 2023</text>
-                    <text x="0" y="-10" text-anchor="middle" font-size="12" fill="#2196f3">Clicks: 120</text>
-                  </g>
-                </svg>
-              </div>
-            </div>
-
-            <!-- Device Breakdown -->
-            <div class="material-card bg-white p-5">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-neutral-800">Device Breakdown</h3>
-                <button class="text-primary-600 text-sm font-medium focus:outline-none" id="deviceDetailsBtn">Details</button>
-              </div>
-              <div class="chart-container" id="deviceChart">
-                <svg width="100%" height="100%" viewBox="0 0 300 250">
-                  <!-- Donut chart -->
-                  <circle cx="150" cy="120" r="80" fill="none" stroke="#e0e0e0" stroke-width="30" />
-                  
-                  <!-- Mobile segment (55%) -->
-                  <circle cx="150" cy="120" r="80" fill="none" stroke="#2196f3" stroke-width="30" 
-                          stroke-dasharray="502" stroke-dashoffset="226" transform="rotate(-90 150 120)" />
-                  
-                  <!-- Desktop segment (35%) -->
-                  <circle cx="150" cy="120" r="80" fill="none" stroke="#4caf50" stroke-width="30" 
-                          stroke-dasharray="502" stroke-dashoffset="377" transform="rotate(108 150 120)" />
-                  
-                  <!-- Tablet segment (10%) -->
-                  <circle cx="150" cy="120" r="80" fill="none" stroke="#ff9800" stroke-width="30" 
-                          stroke-dasharray="502" stroke-dashoffset="452" transform="rotate(234 150 120)" />
-                  
-                  <!-- Center text -->
-                  <text x="150" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="#212121" id="deviceTotalClicks">24,583</text>
-                  <text x="150" y="135" text-anchor="middle" font-size="12" fill="#616161">Total Clicks</text>
-                </svg>
-                
-                <!-- Legend -->
-                <div class="flex flex-col space-y-3 mt-4">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-primary-500 mr-2"></span>
-                      <span class="text-sm text-neutral-700">Mobile</span>
+                <div>
+                  <label class="text-sm font-medium text-neutral-700 block mb-2">Implementation Level</label>
+                  <input type="range" id="implementationLevelSlider" min="0" max="100" value="75" class="opportunity-slider w-full" />
+                  <div class="flex justify-between mt-1">
+                    <span class="text-xs text-neutral-500">Minimal</span>
+                    <span class="text-xs font-medium text-neutral-800" id="implementationLevelValue">75%</span>
+                    <span class="text-xs text-neutral-500">Complete</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-neutral-700 block mb-2">Estimated Results</label>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                      <p class="text-xs text-neutral-600">Traffic Increase</p>
+                      <p class="text-lg font-bold text-primary-600" id="trafficIncreaseEstimate">+15.3%</p>
                     </div>
-                    <div class="flex items-center">
-                      <span class="text-sm font-medium text-neutral-800" id="mobileClicks">13,521</span>
-                      <span class="text-sm text-neutral-600 ml-2" id="mobilePercentage">(55%)</span>
+                    <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                      <p class="text-xs text-neutral-600">Position Improvement</p>
+                      <p class="text-lg font-bold text-green-600" id="positionImprovementEstimate">+2.4</p>
                     </div>
                   </div>
+                </div>
+                <div class="p-3 bg-primary-50 rounded-lg border border-primary-100">
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
-                      <span class="text-sm text-neutral-700">Desktop</span>
+                    <div>
+                      <p class="text-sm font-medium text-neutral-800">Potential Monthly Clicks</p>
+                      <p class="text-lg font-bold text-primary-700" id="potentialMonthlyClicks">+3,742</p>
                     </div>
-                    <div class="flex items-center">
-                      <span class="text-sm font-medium text-neutral-800" id="desktopClicks">8,604</span>
-                      <span class="text-sm text-neutral-600 ml-2" id="desktopPercentage">(35%)</span>
-                    </div>
+                    <button id="calculateOpportunityBtn" class="material-btn px-4 py-2 bg-primary-600 text-white">Recalculate</button>
                   </div>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-orange-500 mr-2"></span>
-                      <span class="text-sm text-neutral-700">Tablet</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="text-sm font-medium text-neutral-800" id="tabletClicks">2,458</span>
-                      <span class="text-sm text-neutral-600 ml-2" id="tabletPercentage">(10%)</span>
-                    </div>
-                  </div>
+                </div>
+                <div class="mt-4">
+                  <button id="createTaskBtn" class="w-full material-btn py-2 flex items-center justify-center bg-primary-50 text-primary-700 border border-primary-200">
+                    <span class="material-icons mr-2 text-sm">add_task</span>
+                    Create Task
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Top Performing Content -->
+          <!-- Keyword Opportunities -->
           <div class="material-card bg-white p-5 mb-8">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-neutral-800">Top Performing Pages</h3>
-              <button class="text-primary-600 text-sm font-medium focus:outline-none" id="viewAllPagesBtn">View All</button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full">
-                <thead>
-                  <tr class="border-b border-neutral-200">
-                    <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-                  </tr>
-                </thead>
-                <tbody id="topPagesTable">
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">article</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/blog/10-seo-tips-for-beginners</p>
-                          <p class="text-xs text-neutral-500">Blog Post</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">4,285</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">52,341</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">8.2%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-green-600">3.2</span>
-                        <span class="material-icons text-green-600 text-sm ml-1">arrow_upward</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">home</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/</p>
-                          <p class="text-xs text-neutral-500">Homepage</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">3,127</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">48,762</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">6.4%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-green-600">4.8</span>
-                        <span class="material-icons text-green-600 text-sm ml-1">arrow_upward</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">article</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/blog/google-algorithm-update-2023</p>
-                          <p class="text-xs text-neutral-500">Blog Post</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">2,854</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">31,245</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">9.1%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-red-600">5.7</span>
-                        <span class="material-icons text-red-600 text-sm ml-1">arrow_downward</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">shopping_bag</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/products/seo-toolkit</p>
-                          <p class="text-xs text-neutral-500">Product Page</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">2,341</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">28,954</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">8.1%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-green-600">6.2</span>
-                        <span class="material-icons text-green-600 text-sm ml-1">arrow_upward</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr class="hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">description</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/about-us</p>
-                          <p class="text-xs text-neutral-500">About Page</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">1,875</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">22,456</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">8.3%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-red-600">7.4</span>
-                        <span class="material-icons text-red-600 text-sm ml-1">arrow_downward</span>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Keywords Analysis -->
-          <div class="material-card bg-white p-5 mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-neutral-800">Top Keywords</h3>
-              <button class="text-primary-600 text-sm font-medium focus:outline-none" id="viewAllKeywordsBtn">View All Keywords</button>
+              <h3 class="text-lg font-medium text-neutral-800">Keyword Opportunities</h3>
+              <button id="refreshKeywordOpportunitiesBtn" class="text-primary-600 text-sm font-medium focus:outline-none flex items-center">
+                <span class="material-icons text-sm mr-1">refresh</span>
+                Refresh
+              </button>
             </div>
             <div class="overflow-x-auto">
               <table class="min-w-full">
                 <thead>
                   <tr class="border-b border-neutral-200">
                     <th class="py-3 text-left text-sm font-medium text-neutral-500">Keyword</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Trend</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Monthly Volume</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Competition</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Current Position</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Potential</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Action</th>
                   </tr>
                 </thead>
-                <tbody id="topKeywordsTable">
+                <tbody id="keywordOpportunitiesTable">
                   <tr class="border-b border-neutral-100 hover:bg-neutral-50">
                     <td class="py-4 pr-4">
                       <div>
-                        <p class="text-sm font-medium text-neutral-800">seo tips for beginners</p>
+                        <p class="text-sm font-medium text-neutral-800">seo strategy template</p>
                         <div class="flex items-center mt-1">
-                          <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">High volume</span>
+                          <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Opportunity</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">1,245</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">15,678</td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">2,400</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">7.9%</span>
+                      <div class="flex items-center justify-end">
+                        <div class="w-16 bg-neutral-200 rounded-full h-1.5">
+                          <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 65%"></div>
+                        </div>
+                        <span class="text-sm text-neutral-600 ml-2">Medium</span>
+                      </div>
                     </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">12</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-green-600">2.3</span>
+                      <div class="flex items-center justify-end">
+                        <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                        <span class="text-sm font-medium text-green-600">Top 5</span>
+                      </div>
                     </td>
-                    <td class="py-4 text-right">
-                      <svg class="inline-block" width="80" height="30" viewBox="0 0 80 30">
-                        <path d="M5,20 L15,18 L25,15 L35,12 L45,10 L55,8 L65,5 L75,5" fill="none" stroke="#4caf50" stroke-width="2" />
-                      </svg>
+                    <td class="py-4 text-center">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm target-keyword-btn" data-keyword="seo strategy template">Target</button>
                     </td>
                   </tr>
                   <tr class="border-b border-neutral-100 hover:bg-neutral-50">
                     <td class="py-4 pr-4">
                       <div>
-                        <p class="text-sm font-medium text-neutral-800">google algorithm update</p>
-                        <div class="flex items-center mt-1">
-                          <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Trending</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">987</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">12,456</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">7.9%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-green-600">3.5</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <svg class="inline-block" width="80" height="30" viewBox="0 0 80 30">
-                        <path d="M5,25 L15,20 L25,15 L35,10 L45,8 L55,5 L65,5 L75,3" fill="none" stroke="#4caf50" stroke-width="2" />
-                      </svg>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div>
-                        <p class="text-sm font-medium text-neutral-800">seo toolkit review</p>
+                        <p class="text-sm font-medium text-neutral-800">best seo tools 2023</p>
                         <div class="flex items-center mt-1">
                           <span class="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded-full">Commercial</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">854</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">9,876</td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">3,600</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">8.6%</span>
+                      <div class="flex items-center justify-end">
+                        <div class="w-16 bg-neutral-200 rounded-full h-1.5">
+                          <div class="bg-red-500 h-1.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <span class="text-sm text-neutral-600 ml-2">High</span>
+                      </div>
                     </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">18</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-green-600">4.2</span>
+                      <div class="flex items-center justify-end">
+                        <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                        <span class="text-sm font-medium text-green-600">Top 10</span>
+                      </div>
                     </td>
-                    <td class="py-4 text-right">
-                      <svg class="inline-block" width="80" height="30" viewBox="0 0 80 30">
-                        <path d="M5,15 L15,18 L25,12 L35,15 L45,10 L55,12 L65,8 L75,5" fill="none" stroke="#4caf50" stroke-width="2" />
-                      </svg>
+                    <td class="py-4 text-center">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm target-keyword-btn" data-keyword="best seo tools 2023">Target</button>
                     </td>
                   </tr>
                   <tr class="border-b border-neutral-100 hover:bg-neutral-50">
                     <td class="py-4 pr-4">
                       <div>
-                        <p class="text-sm font-medium text-neutral-800">digital marketing agency</p>
+                        <p class="text-sm font-medium text-neutral-800">how to improve website ranking</p>
                         <div class="flex items-center mt-1">
-                          <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">Competitive</span>
+                          <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Low Competition</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">687</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">15,432</td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">1,900</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">4.5%</span>
+                      <div class="flex items-center justify-end">
+                        <div class="w-16 bg-neutral-200 rounded-full h-1.5">
+                          <div class="bg-green-500 h-1.5 rounded-full" style="width: 35%"></div>
+                        </div>
+                        <span class="text-sm text-neutral-600 ml-2">Low</span>
+                      </div>
                     </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">15</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-red-600">8.7</span>
+                      <div class="flex items-center justify-end">
+                        <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                        <span class="text-sm font-medium text-green-600">Top 3</span>
+                      </div>
                     </td>
+                    <td class="py-4 text-center">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm target-keyword-btn" data-keyword="how to improve website ranking">Target</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div>
+                        <p class="text-sm font-medium text-neutral-800">content marketing roi</p>
+                        <div class="flex items-center mt-1">
+                          <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">Trending</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">1,200</td>
                     <td class="py-4 text-right">
-                      <svg class="inline-block" width="80" height="30" viewBox="0 0 80 30">
-                        <path d="M5,10 L15,12 L25,15 L35,18 L45,20 L55,18 L65,20 L75,25" fill="none" stroke="#f44336" stroke-width="2" />
-                      </svg>
+                      <div class="flex items-center justify-end">
+                        <div class="w-16 bg-neutral-200 rounded-full h-1.5">
+                          <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 55%"></div>
+                        </div>
+                        <span class="text-sm text-neutral-600 ml-2">Medium</span>
+                      </div>
+                    </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">22</td>
+                    <td class="py-4 text-right">
+                      <div class="flex items-center justify-end">
+                        <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                        <span class="text-sm font-medium text-green-600">Top 10</span>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm target-keyword-btn" data-keyword="content marketing roi">Target</button>
                     </td>
                   </tr>
                   <tr class="hover:bg-neutral-50">
                     <td class="py-4 pr-4">
                       <div>
-                        <p class="text-sm font-medium text-neutral-800">content marketing strategy</p>
+                        <p class="text-sm font-medium text-neutral-800">local seo guide</p>
                         <div class="flex items-center mt-1">
-                          <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Growing</span>
+                          <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Quick Win</span>
                         </div>
                       </div>
                     </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">542</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">7,654</td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">2,800</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">7.1%</span>
+                      <div class="flex items-center justify-end">
+                        <div class="w-16 bg-neutral-200 rounded-full h-1.5">
+                          <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 60%"></div>
+                        </div>
+                        <span class="text-sm text-neutral-600 ml-2">Medium</span>
+                      </div>
                     </td>
+                    <td class="py-4 text-right text-sm font-medium text-neutral-800">11</td>
                     <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-green-600">5.3</span>
+                      <div class="flex items-center justify-end">
+                        <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                        <span class="text-sm font-medium text-green-600">Top 5</span>
+                      </div>
                     </td>
-                    <td class="py-4 text-right">
-                      <svg class="inline-block" width="80" height="30" viewBox="0 0 80 30">
-                        <path d="M5,20 L15,18 L25,15 L35,12 L45,10 L55,8 L65,7 L75,5" fill="none" stroke="#4caf50" stroke-width="2" />
-                      </svg>
+                    <td class="py-4 text-center">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm target-keyword-btn" data-keyword="local seo guide">Target</button>
                     </td>
                   </tr>
                 </tbody>
@@ -1194,148 +245,839 @@
           </div>
         </div>
 
-        <!-- Opportunities Tab Content -->
-        <div id="opportunities" class="tab-content">
+        <!-- Errors Tab Content -->
+        <div id="errors" class="tab-content">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Error Summary -->
             <div class="material-card bg-white p-5 lg:col-span-2">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-neutral-800">Improvement Opportunities</h3>
+                <h3 class="text-lg font-medium text-neutral-800">Error Summary</h3>
                 <div class="flex items-center space-x-2">
-                  <span class="text-sm text-neutral-600">Sort by:</span>
-                  <select id="opportunitySortSelect" class="text-sm border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value="impact">Impact</option>
-                    <option value="difficulty">Difficulty</option>
-                    <option value="recent">Most Recent</option>
-                  </select>
+                  <button id="exportErrorsBtn" class="material-btn px-4 py-1.5 bg-white text-neutral-700 border border-neutral-300 flex items-center">
+                    <span class="material-icons text-sm mr-1">download</span>
+                    Export
+                  </button>
+                  <button id="refreshErrorsBtn" class="material-btn px-4 py-1.5 bg-primary-50 text-primary-700 flex items-center">
+                    <span class="material-icons text-sm mr-1">refresh</span>
+                    Refresh
+                  </button>
                 </div>
               </div>
-              <div class="space-y-4" id="opportunitiesList">
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div class="flex items-start">
-                    <span class="material-icons text-blue-600 mr-3">lightbulb</span>
-                    <div class="flex-grow">
-                      <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-neutral-800">Optimize Meta Descriptions</h4>
-                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High Impact</span>
-                      </div>
-                      <p class="text-sm text-neutral-600 mt-1">15 pages are missing meta descriptions. Adding these could improve CTR by up to 5.7%.</p>
-                      <div class="mt-3 flex items-center justify-between">
-                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="meta-descriptions">
-                          <span class="material-icons text-sm mr-1">visibility</span>
-                          View Affected Pages
-                        </button>
-                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm fix-now-btn" data-issue="meta-descriptions">Fix Now</button>
-                      </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 bg-red-50 rounded-lg border border-red-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Critical Errors</h4>
+                    <span class="text-lg font-bold text-red-600">7</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">Requires immediate attention</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-red-500 h-1.5 rounded-full" style="width: 15%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Warnings</h4>
+                    <span class="text-lg font-bold text-yellow-600">23</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">Should be addressed soon</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 35%"></div>
                     </div>
                   </div>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Notices</h4>
+                    <span class="text-lg font-bold text-blue-600">42</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">For your information</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-blue-500 h-1.5 rounded-full" style="width: 50%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-4" id="errorsList">
+                <div class="p-4 bg-red-50 rounded-lg border border-red-100">
                   <div class="flex items-start">
-                    <span class="material-icons text-blue-600 mr-3">speed</span>
+                    <span class="material-icons text-red-600 mr-3">error</span>
                     <div class="flex-grow">
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-neutral-800">Improve Page Speed</h4>
-                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Medium Impact</span>
+                        <h4 class="text-sm font-medium text-neutral-800">Broken Links</h4>
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Critical</span>
                       </div>
-                      <p class="text-sm text-neutral-600 mt-1">8 pages have slow loading times (>3s). Improving speed could reduce bounce rates.</p>
-                      <div class="mt-2">
-                        <div class="flex items-center mb-1">
-                          <span class="text-xs text-neutral-600 mr-2">Current Average:</span>
-                          <div class="w-full bg-neutral-200 rounded-full h-2">
-                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 65%"></div>
-                          </div>
-                          <span class="text-xs font-medium text-neutral-800 ml-2">3.2s</span>
-                        </div>
-                        <div class="flex items-center">
-                          <span class="text-xs text-neutral-600 mr-2">Target:</span>
-                          <div class="w-full bg-neutral-200 rounded-full h-2">
-                            <div class="bg-green-500 h-2 rounded-full" style="width: 35%"></div>
-                          </div>
-                          <span class="text-xs font-medium text-neutral-800 ml-2">1.5s</span>
-                        </div>
-                      </div>
+                      <p class="text-sm text-neutral-600 mt-1">7 broken links found across your site. These can negatively impact user experience and SEO.</p>
                       <div class="mt-3 flex items-center justify-between">
-                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="page-speed">
+                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="broken-links">
                           <span class="material-icons text-sm mr-1">visibility</span>
                           View Affected Pages
                         </button>
-                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm view-details-btn" data-issue="page-speed">View Details</button>
+                        <button class="material-btn px-4 py-1 bg-red-600 text-white text-sm fix-now-btn" data-issue="broken-links">Fix Now</button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                   <div class="flex items-start">
-                    <span class="material-icons text-blue-600 mr-3">mobile_friendly</span>
+                    <span class="material-icons text-yellow-600 mr-3">warning</span>
                     <div class="flex-grow">
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-neutral-800">Mobile Optimization</h4>
-                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High Impact</span>
+                        <h4 class="text-sm font-medium text-neutral-800">Duplicate Title Tags</h4>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Warning</span>
                       </div>
-                      <p class="text-sm text-neutral-600 mt-1">3 pages have mobile usability issues. Fixing these could improve mobile rankings.</p>
-                      <div class="mt-3">
-                        <div class="grid grid-cols-3 gap-2">
-                          <div class="p-2 bg-white rounded border border-neutral-200 text-center">
-                            <p class="text-xs text-neutral-600">Tap targets</p>
-                            <p class="text-sm font-medium text-neutral-800">2 pages</p>
-                          </div>
-                          <div class="p-2 bg-white rounded border border-neutral-200 text-center">
-                            <p class="text-xs text-neutral-600">Viewport</p>
-                            <p class="text-sm font-medium text-neutral-800">1 page</p>
-                          </div>
-                          <div class="p-2 bg-white rounded border border-neutral-200 text-center">
-                            <p class="text-xs text-neutral-600">Text size</p>
-                            <p class="text-sm font-medium text-neutral-800">1 page</p>
-                          </div>
-                        </div>
-                      </div>
+                      <p class="text-sm text-neutral-600 mt-1">5 pages have duplicate title tags. This can confuse search engines about which page to rank.</p>
                       <div class="mt-3 flex items-center justify-between">
-                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="mobile-optimization">
+                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="duplicate-titles">
                           <span class="material-icons text-sm mr-1">visibility</span>
                           View Affected Pages
                         </button>
-                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm view-issues-btn" data-issue="mobile-optimization">View Issues</button>
+                        <button class="material-btn px-4 py-1 bg-yellow-600 text-white text-sm fix-now-btn" data-issue="duplicate-titles">Fix Now</button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                   <div class="flex items-start">
-                    <span class="material-icons text-blue-600 mr-3">image</span>
+                    <span class="material-icons text-yellow-600 mr-3">warning</span>
                     <div class="flex-grow">
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-neutral-800">Image Optimization</h4>
-                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Medium Impact</span>
+                        <h4 class="text-sm font-medium text-neutral-800">Missing Alt Text</h4>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Warning</span>
                       </div>
-                      <p class="text-sm text-neutral-600 mt-1">12 images are missing alt text and 8 images need resizing. Optimizing these could improve accessibility and page speed.</p>
+                      <p class="text-sm text-neutral-600 mt-1">15 images are missing alt text. This affects accessibility and image SEO.</p>
                       <div class="mt-3 flex items-center justify-between">
-                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="image-optimization">
+                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="missing-alt-text">
                           <span class="material-icons text-sm mr-1">visibility</span>
                           View Affected Images
                         </button>
-                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm fix-now-btn" data-issue="image-optimization">Fix Now</button>
+                        <button class="material-btn px-4 py-1 bg-yellow-600 text-white text-sm fix-now-btn" data-issue="missing-alt-text">Fix Now</button>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
                   <div class="flex items-start">
-                    <span class="material-icons text-blue-600 mr-3">link</span>
+                    <span class="material-icons text-blue-600 mr-3">info</span>
                     <div class="flex-grow">
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-neutral-800">Internal Linking Structure</h4>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Low Impact</span>
+                        <h4 class="text-sm font-medium text-neutral-800">Mixed Content</h4>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Notice</span>
                       </div>
-                      <p class="text-sm text-neutral-600 mt-1">5 important pages have fewer than 3 internal links pointing to them. Improving internal linking could boost their visibility.</p>
+                      <p class="text-sm text-neutral-600 mt-1">3 pages have mixed content (HTTP resources on HTTPS pages). This may cause browser security warnings.</p>
                       <div class="mt-3 flex items-center justify-between">
-                        <button class="text-sm text-primary-600 font-medium flex items-center view-link-map-btn" data-issue="internal-linking">
+                        <button class="text-sm text-primary-600 font-medium flex items-center view-affected-pages" data-issue="mixed-content">
                           <span class="material-icons text-sm mr-1">visibility</span>
-                          View Link Map
+                          View Affected Pages
                         </button>
-                        <button class="material-btn px-4 py-1 bg-primary-600 text-white text-sm get-suggestions-btn" data-issue="internal-linking">Get Suggestions</button>
+                        <button class="material-btn px-4 py-1 bg-blue-600 text-white text-sm fix-now-btn" data-issue="mixed-content">Fix Now</button>
                       </div>
                     </div>
                   </div>
-                  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9518db5f205c090a',t:'MTc1MDIyOTQ3My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-                </body>
-                </html>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error Trends -->
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Error Trends</h3>
+                <select id="errorTrendTimeframe" class="text-sm border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="180">Last 180 days</option>
+                </select>
+              </div>
+              <div class="chart-container" id="errorTrendChart">
+                <svg width="100%" height="100%" viewBox="0 0 300 250">
+                  <!-- Grid lines -->
+                  <line x1="40" y1="220" x2="280" y2="220" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="40" y1="170" x2="280" y2="170" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="40" y1="120" x2="280" y2="120" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="40" y1="70" x2="280" y2="70" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="40" y1="20" x2="280" y2="20" stroke="#e0e0e0" stroke-width="1" />
+                  
+                  <!-- Y-axis labels -->
+                  <text x="35" y="220" text-anchor="end" font-size="10" fill="#616161">0</text>
+                  <text x="35" y="170" text-anchor="end" font-size="10" fill="#616161">25</text>
+                  <text x="35" y="120" text-anchor="end" font-size="10" fill="#616161">50</text>
+                  <text x="35" y="70" text-anchor="end" font-size="10" fill="#616161">75</text>
+                  <text x="35" y="20" text-anchor="end" font-size="10" fill="#616161">100</text>
+                  
+                  <!-- X-axis labels -->
+                  <text x="40" y="235" text-anchor="middle" font-size="10" fill="#616161">Jan 1</text>
+                  <text x="100" y="235" text-anchor="middle" font-size="10" fill="#616161">Jan 10</text>
+                  <text x="160" y="235" text-anchor="middle" font-size="10" fill="#616161">Jan 20</text>
+                  <text x="220" y="235" text-anchor="middle" font-size="10" fill="#616161">Jan 30</text>
+                  <text x="280" y="235" text-anchor="middle" font-size="10" fill="#616161">Feb 1</text>
+                  
+                  <!-- Critical errors line -->
+                  <path d="M40,180 L100,190 L160,170 L220,150 L280,140" 
+                        fill="none" stroke="#f44336" stroke-width="2" />
+                  
+                  <!-- Warnings line -->
+                  <path d="M40,120 L100,140 L160,130 L220,110 L280,100" 
+                        fill="none" stroke="#ff9800" stroke-width="2" />
+                  
+                  <!-- Notices line -->
+                  <path d="M40,80 L100,90 L160,100 L220,90 L280,70" 
+                        fill="none" stroke="#2196f3" stroke-width="2" />
+                  
+                  <!-- Data points -->
+                  <circle cx="40" cy="180" r="3" fill="#f44336" />
+                  <circle cx="100" cy="190" r="3" fill="#f44336" />
+                  <circle cx="160" cy="170" r="3" fill="#f44336" />
+                  <circle cx="220" cy="150" r="3" fill="#f44336" />
+                  <circle cx="280" cy="140" r="3" fill="#f44336" />
+                  
+                  <circle cx="40" cy="120" r="3" fill="#ff9800" />
+                  <circle cx="100" cy="140" r="3" fill="#ff9800" />
+                  <circle cx="160" cy="130" r="3" fill="#ff9800" />
+                  <circle cx="220" cy="110" r="3" fill="#ff9800" />
+                  <circle cx="280" cy="100" r="3" fill="#ff9800" />
+                  
+                  <circle cx="40" cy="80" r="3" fill="#2196f3" />
+                  <circle cx="100" cy="90" r="3" fill="#2196f3" />
+                  <circle cx="160" cy="100" r="3" fill="#2196f3" />
+                  <circle cx="220" cy="90" r="3" fill="#2196f3" />
+                  <circle cx="280" cy="70" r="3" fill="#2196f3" />
+                </svg>
+              </div>
+              <div class="flex flex-col space-y-2 mt-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
+                    <span class="text-sm text-neutral-700">Critical Errors</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="material-icons text-green-500 text-sm">arrow_downward</span>
+                    <span class="text-sm font-medium text-green-600">-12%</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
+                    <span class="text-sm text-neutral-700">Warnings</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="material-icons text-green-500 text-sm">arrow_downward</span>
+                    <span class="text-sm font-medium text-green-600">-8%</span>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
+                    <span class="text-sm text-neutral-700">Notices</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="material-icons text-green-500 text-sm">arrow_downward</span>
+                    <span class="text-sm font-medium text-green-600">-5%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-neutral-200">
+                <button id="generateErrorReportBtn" class="w-full material-btn py-2 flex items-center justify-center bg-primary-50 text-primary-700 border border-primary-200">
+                  <span class="material-icons mr-2 text-sm">description</span>
+                  Generate Full Report
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Details -->
+          <div class="material-card bg-white p-5 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-neutral-800">Error Details</h3>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-neutral-600">Filter by:</span>
+                <select id="errorTypeFilter" class="text-sm border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="all">All Errors</option>
+                  <option value="critical">Critical Only</option>
+                  <option value="warnings">Warnings Only</option>
+                  <option value="notices">Notices Only</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500">Error</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500">URL</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Type</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Detected</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="errorDetailsTable">
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-red-500 mr-2">error</span>
+                        <p class="text-sm font-medium text-neutral-800">404 Not Found</p>
+                      </div>
+                    </td>
+                    <td class="py-4 pr-4">
+                      <p class="text-sm text-neutral-600 truncate max-w-xs">/blog/old-post-2022</p>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Critical</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 15, 2023</td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm fix-error-btn" data-error="404" data-url="/blog/old-post-2022">Fix</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-red-500 mr-2">error</span>
+                        <p class="text-sm font-medium text-neutral-800">Broken Link</p>
+                      </div>
+                    </td>
+                    <td class="py-4 pr-4">
+                      <p class="text-sm text-neutral-600 truncate max-w-xs">/resources/ebook-download</p>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Critical</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 18, 2023</td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm fix-error-btn" data-error="broken-link" data-url="/resources/ebook-download">Fix</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-yellow-500 mr-2">warning</span>
+                        <p class="text-sm font-medium text-neutral-800">Duplicate Title</p>
+                      </div>
+                    </td>
+                    <td class="py-4 pr-4">
+                      <p class="text-sm text-neutral-600 truncate max-w-xs">/blog/seo-tips-2023</p>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Warning</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 20, 2023</td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm fix-error-btn" data-error="duplicate-title" data-url="/blog/seo-tips-2023">Fix</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-yellow-500 mr-2">warning</span>
+                        <p class="text-sm font-medium text-neutral-800">Missing Alt Text</p>
+                      </div>
+                    </td>
+                    <td class="py-4 pr-4">
+                      <p class="text-sm text-neutral-600 truncate max-w-xs">/products/seo-toolkit</p>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Warning</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 22, 2023</td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm fix-error-btn" data-error="missing-alt" data-url="/products/seo-toolkit">Fix</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-blue-500 mr-2">info</span>
+                        <p class="text-sm font-medium text-neutral-800">Mixed Content</p>
+                      </div>
+                    </td>
+                    <td class="py-4 pr-4">
+                      <p class="text-sm text-neutral-600 truncate max-w-xs">/about-us</p>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Notice</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 25, 2023</td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm fix-error-btn" data-error="mixed-content" data-url="/about-us">Fix</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indexing Tab Content -->
+        <div id="indexing" class="tab-content">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Indexing Overview -->
+            <div class="material-card bg-white p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Indexing Overview</h3>
+                <button id="requestIndexingBtn" class="material-btn px-4 py-1.5 bg-primary-600 text-white flex items-center">
+                  <span class="material-icons text-sm mr-1">sync</span>
+                  Request Indexing
+                </button>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Indexed Pages</h4>
+                    <span class="text-lg font-bold text-green-600">142</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">+5 since last month</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-green-500 h-1.5 rounded-full" style="width: 85%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Excluded Pages</h4>
+                    <span class="text-lg font-bold text-yellow-600">18</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">-3 since last month</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 10%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Discovered Pages</h4>
+                    <span class="text-lg font-bold text-blue-600">8</span>
+                  </div>
+                  <p class="text-xs text-neutral-600">+2 since last month</p>
+                  <div class="mt-2">
+                    <div class="w-full bg-neutral-200 rounded-full h-1.5">
+                      <div class="bg-blue-500 h-1.5 rounded-full" style="width: 5%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-container" id="indexingChart">
+                <svg width="100%" height="100%" viewBox="0 0 700 200">
+                  <!-- Grid lines -->
+                  <line x1="50" y1="180" x2="650" y2="180" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="140" x2="650" y2="140" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="100" x2="650" y2="100" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="60" x2="650" y2="60" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="20" x2="650" y2="20" stroke="#e0e0e0" stroke-width="1" />
+                  
+                  <!-- Y-axis labels -->
+                  <text x="45" y="180" text-anchor="end" font-size="12" fill="#616161">0</text>
+                  <text x="45" y="140" text-anchor="end" font-size="12" fill="#616161">50</text>
+                  <text x="45" y="100" text-anchor="end" font-size="12" fill="#616161">100</text>
+                  <text x="45" y="60" text-anchor="end" font-size="12" fill="#616161">150</text>
+                  <text x="45" y="20" text-anchor="end" font-size="12" fill="#616161">200</text>
+                  
+                  <!-- X-axis labels -->
+                  <text x="50" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 1</text>
+                  <text x="150" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 7</text>
+                  <text x="250" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 14</text>
+                  <text x="350" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 21</text>
+                  <text x="450" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 28</text>
+                  <text x="550" y="195" text-anchor="middle" font-size="12" fill="#616161">Feb 4</text>
+                  <text x="650" y="195" text-anchor="middle" font-size="12" fill="#616161">Feb 11</text>
+                  
+                  <!-- Indexed pages area -->
+                  <path d="M50,100 L150,95 L250,90 L350,85 L450,80 L550,75 L650,70 L650,180 L50,180 Z" 
+                        fill="#e8f5e9" stroke="#4caf50" stroke-width="1" />
+                  
+                  <!-- Indexed pages line -->
+                  <path d="M50,100 L150,95 L250,90 L350,85 L450,80 L550,75 L650,70" 
+                        fill="none" stroke="#4caf50" stroke-width="2" />
+                  
+                  <!-- Excluded pages line -->
+                  <path d="M50,160 L150,158 L250,155 L350,153 L450,150 L550,148 L650,145" 
+                        fill="none" stroke="#ff9800" stroke-width="2" />
+                  
+                  <!-- Discovered pages line -->
+                  <path d="M50,175 L150,173 L250,172 L350,170 L450,168 L550,167 L650,165" 
+                        fill="none" stroke="#2196f3" stroke-width="2" />
+                  
+                  <!-- Data points -->
+                  <circle cx="50" cy="100" r="4" fill="#4caf50" />
+                  <circle cx="150" cy="95" r="4" fill="#4caf50" />
+                  <circle cx="250" cy="90" r="4" fill="#4caf50" />
+                  <circle cx="350" cy="85" r="4" fill="#4caf50" />
+                  <circle cx="450" cy="80" r="4" fill="#4caf50" />
+                  <circle cx="550" cy="75" r="4" fill="#4caf50" />
+                  <circle cx="650" cy="70" r="4" fill="#4caf50" />
+                  
+                  <circle cx="50" cy="160" r="4" fill="#ff9800" />
+                  <circle cx="150" cy="158" r="4" fill="#ff9800" />
+                  <circle cx="250" cy="155" r="4" fill="#ff9800" />
+                  <circle cx="350" cy="153" r="4" fill="#ff9800" />
+                  <circle cx="450" cy="150" r="4" fill="#ff9800" />
+                  <circle cx="550" cy="148" r="4" fill="#ff9800" />
+                  <circle cx="650" cy="145" r="4" fill="#ff9800" />
+                  
+                  <circle cx="50" cy="175" r="4" fill="#2196f3" />
+                  <circle cx="150" cy="173" r="4" fill="#2196f3" />
+                  <circle cx="250" cy="172" r="4" fill="#2196f3" />
+                  <circle cx="350" cy="170" r="4" fill="#2196f3" />
+                  <circle cx="450" cy="168" r="4" fill="#2196f3" />
+                  <circle cx="550" cy="167" r="4" fill="#2196f3" />
+                  <circle cx="650" cy="165" r="4" fill="#2196f3" />
+                </svg>
+              </div>
+              <div class="flex items-center justify-center space-x-6 mt-2">
+                <div class="flex items-center">
+                  <span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                  <span class="text-sm text-neutral-700">Indexed</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="h-3 w-3 rounded-full bg-yellow-500 mr-2"></span>
+                  <span class="text-sm text-neutral-700">Excluded</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
+                  <span class="text-sm text-neutral-700">Discovered</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Indexing Issues -->
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Indexing Issues</h3>
+                <button id="fixAllIndexingIssuesBtn" class="text-primary-600 text-sm font-medium focus:outline-none">Fix All</button>
+              </div>
+              <div class="space-y-4" id="indexingIssuesList">
+                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <div class="flex items-start">
+                    <span class="material-icons text-yellow-600 mr-2">warning</span>
+                    <div class="flex-grow">
+                      <p class="text-sm font-medium text-neutral-800">Duplicate content</p>
+                      <p class="text-xs text-neutral-600 mt-1">5 pages have similar content</p>
+                      <button class="text-xs text-primary-600 font-medium mt-1 view-affected-pages" data-issue="duplicate-content">View pages</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <div class="flex items-start">
+                    <span class="material-icons text-yellow-600 mr-2">warning</span>
+                    <div class="flex-grow">
+                      <p class="text-sm font-medium text-neutral-800">Crawled - currently not indexed</p>
+                      <p class="text-xs text-neutral-600 mt-1">3 pages discovered but not indexed</p>
+                      <button class="text-xs text-primary-600 font-medium mt-1 view-affected-pages" data-issue="not-indexed">View pages</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-3 bg-red-50 rounded-lg border border-red-100">
+                  <div class="flex items-start">
+                    <span class="material-icons text-red-600 mr-2">error</span>
+                    <div class="flex-grow">
+                      <p class="text-sm font-medium text-neutral-800">Blocked by robots.txt</p>
+                      <p class="text-xs text-neutral-600 mt-1">2 important pages blocked</p>
+                      <button class="text-xs text-primary-600 font-medium mt-1 view-affected-pages" data-issue="robots-blocked">View pages</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <div class="flex items-start">
+                    <span class="material-icons text-blue-600 mr-2">info</span>
+                    <div class="flex-grow">
+                      <p class="text-sm font-medium text-neutral-800">Indexed, not submitted in sitemap</p>
+                      <p class="text-xs text-neutral-600 mt-1">8 pages missing from sitemap</p>
+                      <button class="text-xs text-primary-600 font-medium mt-1 view-affected-pages" data-issue="not-in-sitemap">View pages</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6">
+                <h4 class="text-sm font-medium text-neutral-700 mb-3">Sitemap Status</h4>
+                <div class="p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <span class="status-indicator status-good"></span>
+                      <span class="text-sm text-neutral-800">sitemap.xml</span>
+                    </div>
+                    <span class="text-xs text-neutral-600">Last crawled: Jan 28, 2023</span>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs text-neutral-600">150 URLs submitted</span>
+                      <span class="text-xs text-neutral-600">|</span>
+                      <span class="text-xs text-neutral-600">142 indexed</span>
+                    </div>
+                    <button id="resubmitSitemapBtn" class="text-xs text-primary-600 font-medium">Resubmit</button>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 pt-4 border-t border-neutral-200">
+                <button id="generateIndexingReportBtn" class="w-full material-btn py-2 flex items-center justify-center bg-primary-50 text-primary-700 border border-primary-200">
+                  <span class="material-icons mr-2 text-sm">description</span>
+                  Generate Indexing Report
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recently Indexed Pages -->
+          <div class="material-card bg-white p-5 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-neutral-800">Recently Indexed Pages</h3>
+              <button id="viewAllIndexedPagesBtn" class="text-primary-600 text-sm font-medium focus:outline-none">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500">URL</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Status</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Last Crawled</th>
+                    <th class="py-3 text-center text-sm font-medium text-neutral-500">Mobile Friendly</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="indexedPagesTable">
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-neutral-400 mr-2 text-sm">article</span>
+                        <p class="text-sm text-neutral-800 truncate max-w-xs">/blog/10-seo-tips-for-beginners</p>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Indexed</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Feb 1, 2023</td>
+                    <td class="py-4 text-center">
+                      <span class="material-icons text-green-500">check_circle</span>
+                    </td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm inspect-page-btn" data-url="/blog/10-seo-tips-for-beginners">Inspect</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-neutral-400 mr-2 text-sm">article</span>
+                        <p class="text-sm text-neutral-800 truncate max-w-xs">/blog/google-algorithm-update-2023</p>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Indexed</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 30, 2023</td>
+                    <td class="py-4 text-center">
+                      <span class="material-icons text-green-500">check_circle</span>
+                    </td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm inspect-page-btn" data-url="/blog/google-algorithm-update-2023">Inspect</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-neutral-400 mr-2 text-sm">shopping_bag</span>
+                        <p class="text-sm text-neutral-800 truncate max-w-xs">/products/seo-toolkit</p>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Indexed</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 28, 2023</td>
+                    <td class="py-4 text-center">
+                      <span class="material-icons text-green-500">check_circle</span>
+                    </td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm inspect-page-btn" data-url="/products/seo-toolkit">Inspect</button>
+                    </td>
+                  </tr>
+                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-neutral-400 mr-2 text-sm">description</span>
+                        <p class="text-sm text-neutral-800 truncate max-w-xs">/resources/seo-guide-2023</p>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Discovered</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 27, 2023</td>
+                    <td class="py-4 text-center">
+                      <span class="material-icons text-yellow-500">warning</span>
+                    </td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm inspect-page-btn" data-url="/resources/seo-guide-2023">Inspect</button>
+                    </td>
+                  </tr>
+                  <tr class="hover:bg-neutral-50">
+                    <td class="py-4 pr-4">
+                      <div class="flex items-center">
+                        <span class="material-icons text-neutral-400 mr-2 text-sm">home</span>
+                        <p class="text-sm text-neutral-800 truncate max-w-xs">/</p>
+                      </div>
+                    </td>
+                    <td class="py-4 text-center">
+                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Indexed</span>
+                    </td>
+                    <td class="py-4 text-center text-sm text-neutral-600">Jan 25, 2023</td>
+                    <td class="py-4 text-center">
+                      <span class="material-icons text-green-500">check_circle</span>
+                    </td>
+                    <td class="py-4 text-right">
+                      <button class="material-btn px-3 py-1 bg-primary-50 text-primary-700 text-sm inspect-page-btn" data-url="/">Inspect</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab Content -->
+        <div id="analytics" class="tab-content">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Analytics Overview -->
+            <div class="material-card bg-white p-5 lg:col-span-2">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Analytics Overview</h3>
+                <div class="flex items-center space-x-2">
+                  <button id="connectGABtn" class="material-btn px-4 py-1.5 bg-white text-neutral-700 border border-neutral-300 flex items-center">
+                    <span class="material-icons text-sm mr-1">settings</span>
+                    Settings
+                  </button>
+                  <button id="refreshAnalyticsBtn" class="material-btn px-4 py-1.5 bg-primary-50 text-primary-700 flex items-center">
+                    <span class="material-icons text-sm mr-1">refresh</span>
+                    Refresh
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="ga4-metric-card p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Users</h4>
+                    <span class="material-icons text-blue-600">person</span>
+                  </div>
+                  <p class="text-xl font-bold text-neutral-800">12,458</p>
+                  <div class="flex items-center mt-1">
+                    <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                    <span class="text-green-500 text-xs font-medium">8.3%</span>
+                    <span class="text-neutral-500 text-xs ml-1">vs prev. period</span>
+                  </div>
+                </div>
+                <div class="ga4-metric-card p-4 bg-green-50 rounded-lg border border-green-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Sessions</h4>
+                    <span class="material-icons text-green-600">timeline</span>
+                  </div>
+                  <p class="text-xl font-bold text-neutral-800">18,742</p>
+                  <div class="flex items-center mt-1">
+                    <span class="material-icons text-green-500 text-sm">arrow_upward</span>
+                    <span class="text-green-500 text-xs font-medium">12.5%</span>
+                    <span class="text-neutral-500 text-xs ml-1">vs prev. period</span>
+                  </div>
+                </div>
+                <div class="ga4-metric-card p-4 bg-purple-50 rounded-lg border border-purple-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Avg. Session</h4>
+                    <span class="material-icons text-purple-600">schedule</span>
+                  </div>
+                  <p class="text-xl font-bold text-neutral-800">2:35</p>
+                  <div class="flex items-center mt-1">
+                    <span class="material-icons text-red-500 text-sm">arrow_downward</span>
+                    <span class="text-red-500 text-xs font-medium">1.2%</span>
+                    <span class="text-neutral-500 text-xs ml-1">vs prev. period</span>
+                  </div>
+                </div>
+                <div class="ga4-metric-card p-4 bg-red-50 rounded-lg border border-red-100">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-neutral-800">Bounce Rate</h4>
+                    <span class="material-icons text-red-600">exit_to_app</span>
+                  </div>
+                  <p class="text-xl font-bold text-neutral-800">42.8%</p>
+                  <div class="flex items-center mt-1">
+                    <span class="material-icons text-green-500 text-sm">arrow_downward</span>
+                    <span class="text-green-500 text-xs font-medium">3.5%</span>
+                    <span class="text-neutral-500 text-xs ml-1">vs prev. period</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-container" id="analyticsChart">
+                <svg width="100%" height="100%" viewBox="0 0 700 200">
+                  <!-- Grid lines -->
+                  <line x1="50" y1="180" x2="650" y2="180" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="140" x2="650" y2="140" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="100" x2="650" y2="100" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="60" x2="650" y2="60" stroke="#e0e0e0" stroke-width="1" />
+                  <line x1="50" y1="20" x2="650" y2="20" stroke="#e0e0e0" stroke-width="1" />
+                  
+                  <!-- Y-axis labels -->
+                  <text x="45" y="180" text-anchor="end" font-size="12" fill="#616161">0</text>
+                  <text x="45" y="140" text-anchor="end" font-size="12" fill="#616161">250</text>
+                  <text x="45" y="100" text-anchor="end" font-size="12" fill="#616161">500</text>
+                  <text x="45" y="60" text-anchor="end" font-size="12" fill="#616161">750</text>
+                  <text x="45" y="20" text-anchor="end" font-size="12" fill="#616161">1000</text>
+                  
+                  <!-- X-axis labels -->
+                  <text x="50" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 1</text>
+                  <text x="150" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 7</text>
+                  <text x="250" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 14</text>
+                  <text x="350" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 21</text>
+                  <text x="450" y="195" text-anchor="middle" font-size="12" fill="#616161">Jan 28</text>
+                  <text x="550" y="195" text-anchor="middle" font-size="12" fill="#616161">Feb 4</text>
+                  <text x="650" y="195" text-anchor="middle" font-size="12" fill="#616161">Feb 11</text>
+                  
+                  <!-- Users area -->
+                  <path d="M50,120 L150,115 L250,110 L350,100 L450,90 L550,85 L650,80 L650,180 L50,180 Z" 
+                        fill="#e3f2fd" stroke="#2196f3" stroke-width="1" />
+                  
+                  <!-- Users line -->
+                  <path d="M50,120 L150,115 L250,110 L350,100 L450,90 L550,85 L650,80" 
+                        fill="none" stroke="#2196f3" stroke-width="2" />
+                  
+                  <!-- Sessions line -->
+                  <path d="M50,100 L150,95 L250,90 L350,80 L450,70 L550,65 L650,60" 
+                        fill="none" stroke="#4caf50" stroke-width="2" />
+                  
+                  <!-- Data points -->
+                  <circle cx="50" cy="120" r="4" fill="#2196f3" />
+                  <circle cx="150" cy="115" r="4" fill="#2196f3" />
+                  <circle cx="250" cy="110" r="4" fill="#2196f3" />
+                  <circle cx="350" cy="100" r="4" fill="#2196f3" />
+                  <circle cx="450" cy="90" r="4" fill="#2196f3" />
+                  <circle cx="550" cy="85" r="4" fill="#2196f3" />
+                  <circle cx="650" cy="80" r="4" fill="#2196f3" />
+                  
+                  <circle cx="50" cy="100" r="4" fill="#4caf50" />
+                  <circle cx="150" cy="95" r="4" fill="#4caf50" />
+                  <circle cx="250" cy="90" r="4" fill="#4caf50" />
+                  <circle cx="350" cy="80" r="4" fill="#4caf50" />
+                  <circle cx="450" cy="70" r="4" fill="#4caf50" />
+                  <circle cx="550" cy="65" r="4" fill="#4caf50" />
+                  <circle cx="650" cy="60" r="4" fill="#4caf50" />
+                </svg>
+              </div>
+              <div class="flex items-center justify-center space-x-6 mt-2">
+                <div class="flex items-center">
+                  <span class="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
+                  <span class="text-sm text-neutral-700">Users</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                  <span class="text-sm text-neutral-700">Sessions</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Traffic Sources -->
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-neutral-800">Traffic Sources</h3>
+                <button id="trafficSourceDetailsBtn" class="text-primary-600 text-sm font-medium focus:outline-none">Details</button>
+              </div>
+              <div class="chart-container" id="trafficSourceChart">
+                <svg width="100%" height="100%" viewBox="0 0 300 250">
+                  <!-- Donut chart -->
+                  <circle cx="150" cy="120" r="80" fill="none" stroke="#e0e0e0" stroke-width="30" />
+                  
+                  <!-- Organic Search segment (45%) -->
+                  <circle cx="150" cy="120" r="80" fill="none" stroke="#4c
