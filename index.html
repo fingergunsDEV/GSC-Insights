@@ -19,14 +19,350 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script defer src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Your CSS here (omitted for brevity) */
+    /* Custom styles for the app can go here or in styles.css */
+    /* Shared styles from your provided styles.css are assumed to be in a separate file or included here */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8fafc;
+    }
+
+    .material-card {
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .material-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .material-btn {
+      border-radius: 20px;
+      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .material-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tab-active {
+      color: #1976d2;
+      border-bottom: 2px solid #1976d2;
+    }
+
+    .progress-bar {
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    .chart-container {
+      height: 250px;
+      position: relative;
+    }
+
+    .tooltip-text { /* Moved tooltip-text here for CSS control */
+      visibility: hidden;
+      position: absolute;
+      z-index: 100;
+      background-color: #424242;
+      color: white;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 10px;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+
+    .has-tooltip:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+    }
+
+    @keyframes skeleton-loading {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-content {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      min-width: 200px;
+      display: none;
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .date-picker {
+      position: relative;
+    }
+
+    .date-picker-calendar {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      width: 300px;
+      display: none;
+      padding: 12px;
+    }
+
+    .date-picker-calendar.show {
+      display: block;
+    }
+
+    .calendar-day {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+
+    .calendar-day:hover {
+      background-color: #e3f2fd;
+    }
+
+    .calendar-day.selected {
+      background-color: #1976d2;
+      color: white;
+    }
+
+    .calendar-day.today {
+      border: 1px solid #1976d2;
+    }
+
+    .calendar-day.disabled {
+      color: #bdbdbd;
+      cursor: not-allowed;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      height: 16px;
+      width: 16px;
+      background-color: #e91e63;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: translateY(0);
+    }
+
+    /* Animation for chart loading */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+
+    /* File upload styling */
+    .file-upload {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-upload input[type=file] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      min-width: 100%;
+      min-height: 100%;
+      font-size: 100px;
+      text-align: right;
+      filter: alpha(opacity=0);
+      opacity: 0;
+      outline: none;
+      background: white;
+      cursor: pointer;
+      display: block;
+    }
+
+    /* GA4 specific styles */
+    .ga4-metric-card {
+      transition: all 0.3s ease;
+    }
+
+    .ga4-metric-card:hover {
+      transform: translateY(-5px);
+    }
+
+    /* Indexing status styles */
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .status-good {
+      background-color: #4caf50;
+    }
+
+    .status-warning {
+      background-color: #ff9800;
+    }
+
+    .status-error {
+      background-color: #f44336;
+    }
+
+    /* Opportunities calculator styles */
+    .opportunity-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #e0e0e0;
+      outline: none;
+    }
+
+    .opportunity-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1976d2;
+      cursor: pointer;
+    }
+
+    .opportunity-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #1976d2;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body class="font-roboto bg-gray-50 min-h-screen">
   <div id="app" class="flex flex-col min-h-screen">
-    <!-- Header -->
     <header class="bg-white shadow-sm" role="banner">
       <div class="container mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center space-x-2">
@@ -36,7 +372,6 @@
           <h1 class="text-xl font-medium text-neutral-800">GSC Insights</h1>
         </div>
         <div class="flex items-center space-x-4">
-          <!-- Notifications Dropdown -->
           <div class="relative dropdown">
             <button id="notificationBtn" class="p-2 rounded-full hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
               <span class="material-icons text-neutral-600">notifications</span>
@@ -85,7 +420,6 @@
               </div>
             </div>
           </div>
-          <!-- Profile Dropdown -->
           <div class="relative dropdown">
             <button id="profileBtn" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
               <div class="h-8 w-8 rounded-full bg-primary-700 flex items-center justify-center text-white">
@@ -133,7 +467,6 @@
     </header>
 
     <main role="main" class="flex-grow container mx-auto px-4 py-6">
-      <!-- Site Selector Dropdown -->
       <div class="mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between">
           <div class="mb-4 md:mb-0">
@@ -150,15 +483,15 @@
             </div>
             <div id="siteDropdown" class="dropdown-content w-full">
               <ul class="py-1">
-                <li data-site="example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
+                <li data-site="https://www.example.com/" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
                   <span class="material-icons text-neutral-500 mr-2">language</span>
                   <span>example.com</span>
                 </li>
-                <li data-site="blog.example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
+                <li data-site="https://blog.example.com/" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
                   <span class="material-icons text-neutral-500 mr-2">language</span>
                   <span>blog.example.com</span>
                 </li>
-                <li data-site="store.example.com" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
+                <li data-site="https://store.example.com/" class="px-4 py-2 hover:bg-neutral-100 flex items-center cursor-pointer">
                   <span class="material-icons text-neutral-500 mr-2">language</span>
                   <span>store.example.com</span>
                 </li>
@@ -172,7 +505,6 @@
         </div>
       </div>
 
-      <!-- Date Range Selector -->
       <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex space-x-2 mb-4 md:mb-0">
           <button class="date-range-btn material-btn px-4 py-2 bg-primary-600 text-white" data-range="28">Last 28 days</button>
@@ -195,12 +527,6 @@
         </div>
       </div>
 
-      <!-- Performance Overview Cards (with tooltips) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- ... as before ... -->
-      </div>
-
-      <!-- Main Tabs -->
       <div class="mb-6">
         <div class="border-b border-neutral-200">
           <nav class="flex space-x-8 overflow-x-auto">
@@ -213,459 +539,787 @@
         </div>
       </div>
 
-      <!-- Tab Content -->
       <div id="tabContent">
         <div id="performance" class="tab-content active">
-      <!-- Performance Overview Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-  <!-- Total Clicks -->
-  <div class="material-card bg-white p-5">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-neutral-600 font-medium">Total Clicks</h3>
-      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times users clicked through to your site">
-        info_outline
-        <span class="tooltip-text">Number of times users clicked through to your site</span>
-      </span>
-    </div>
-    <div class="flex items-end justify-between">
-      <div>
-        <p class="text-3xl font-bold text-neutral-800" id="totalClicks">--</p>
-        <div class="flex items-center mt-1">
-          <span id="clicksTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
-          <span class="text-green-500 text-sm font-medium" id="clicksChange">--</span>
-          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-        </div>
-      </div>
-      <!-- Example: Mini bar chart, can be dynamically generated or left static -->
-      <div class="h-12 flex items-end space-x-1" id="clicksMiniChart">
-        <!-- Optional: mini bars via JS or static placeholder -->
-      </div>
-    </div>
-  </div>
-  <!-- Total Impressions -->
-  <div class="material-card bg-white p-5">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-neutral-600 font-medium">Total Impressions</h3>
-      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times your site appeared in search results">
-        info_outline
-        <span class="tooltip-text">Number of times your site appeared in search results</span>
-      </span>
-    </div>
-    <div class="flex items-end justify-between">
-      <div>
-        <p class="text-3xl font-bold text-neutral-800" id="totalImpressions">--</p>
-        <div class="flex items-center mt-1">
-          <span id="impressionsTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
-          <span class="text-green-500 text-sm font-medium" id="impressionsChange">--</span>
-          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-        </div>
-      </div>
-      <div class="h-12 flex items-end space-x-1" id="impressionsMiniChart"></div>
-    </div>
-  </div>
-  <!-- Average CTR -->
-  <div class="material-card bg-white p-5">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-neutral-600 font-medium">Average CTR</h3>
-      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Click-through rate: clicks divided by impressions">
-        info_outline
-        <span class="tooltip-text">Click-through rate: clicks divided by impressions</span>
-      </span>
-    </div>
-    <div class="flex items-end justify-between">
-      <div>
-        <p class="text-3xl font-bold text-neutral-800" id="averageCTR">--</p>
-        <div class="flex items-center mt-1">
-          <span id="ctrTrendIcon" class="material-icons text-red-500 text-sm">arrow_downward</span>
-          <span class="text-red-500 text-sm font-medium" id="ctrChange">--</span>
-          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-        </div>
-      </div>
-      <div class="h-12 w-24 relative">
-        <svg viewBox="0 0 100 100" class="w-full h-full">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
-          <circle id="ctrCircle" cx="50" cy="50" r="45" fill="none" stroke="#9c27b0" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="262.5" transform="rotate(-90 50 50)" />
-          <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="bold" fill="#9c27b0" id="ctrText">--</text>
-        </svg>
-      </div>
-    </div>
-  </div>
-  <!-- Average Position -->
-  <div class="material-card bg-white p-5">
-    <div class="flex items-center justify-between mb-2">
-      <h3 class="text-neutral-600 font-medium">Average Position</h3>
-      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Average ranking position in search results">
-        info_outline
-        <span class="tooltip-text">Average ranking position in search results</span>
-      </span>
-    </div>
-    <div class="flex items-end justify-between">
-      <div>
-        <p class="text-3xl font-bold text-neutral-800" id="averagePosition">--</p>
-        <div class="flex items-center mt-1">
-          <span id="positionTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
-          <span class="text-green-500 text-sm font-medium" id="positionChange">--</span>
-          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-        </div>
-      </div>
-      <div class="h-12 flex items-center">
-        <div class="flex items-center space-x-1" id="positionMiniChart"></div>
-      </div>
-    </div>
-  </div>
-</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-neutral-600 font-medium">Total Clicks</h3>
+                <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times users clicked through to your site">
+                  info_outline
+                  <span class="tooltip-text">Number of times users clicked through to your site</span>
+                </span>
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-3xl font-bold text-neutral-800" id="totalClicks">--</p>
+                  <div class="flex items-center mt-1">
+                    <span id="clicksTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+                    <span class="text-green-500 text-sm font-medium" id="clicksChange">--</span>
+                    <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+                  </div>
+                </div>
+                <div class="h-12 flex items-end space-x-1" id="clicksMiniChart">
+                  </div>
+              </div>
+            </div>
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-neutral-600 font-medium">Total Impressions</h3>
+                <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times your site appeared in search results">
+                  info_outline
+                  <span class="tooltip-text">Number of times your site appeared in search results</span>
+                </span>
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-3xl font-bold text-neutral-800" id="totalImpressions">--</p>
+                  <div class="flex items-center mt-1">
+                    <span id="impressionsTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+                    <span class="text-green-500 text-sm font-medium" id="impressionsChange">--</span>
+                    <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+                  </div>
+                </div>
+                <div class="h-12 flex items-end space-x-1" id="impressionsMiniChart"></div>
+              </div>
+            </div>
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-neutral-600 font-medium">Average CTR</h3>
+                <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Click-through rate: clicks divided by impressions">
+                  info_outline
+                  <span class="tooltip-text">Click-through rate: clicks divided by impressions</span>
+                </span>
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-3xl font-bold text-neutral-800" id="averageCTR">--</p>
+                  <div class="flex items-center mt-1">
+                    <span id="ctrTrendIcon" class="material-icons text-red-500 text-sm">arrow_downward</span>
+                    <span class="text-red-500 text-sm font-medium" id="ctrChange">--</span>
+                    <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+                  </div>
+                </div>
+                <div class="h-12 w-24 relative">
+                  <svg viewBox="0 0 100 100" class="w-full h-full">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
+                    <circle id="ctrCircle" cx="50" cy="50" r="45" fill="none" stroke="#9c27b0" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="262.5" transform="rotate(-90 50 50)" />
+                    <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="bold" fill="#9c27b0" id="ctrText">--</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="material-card bg-white p-5">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-neutral-600 font-medium">Average Position</h3>
+                <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Average ranking position in search results">
+                  info_outline
+                  <span class="tooltip-text">Average ranking position in search results</span>
+                </span>
+              </div>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-3xl font-bold text-neutral-800" id="averagePosition">--</p>
+                  <div class="flex items-center mt-1">
+                    <span id="positionTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+                    <span class="text-green-500 text-sm font-medium" id="positionChange">--</span>
+                    <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+                  </div>
+                </div>
+                <div class="h-12 flex items-center">
+                  <div class="flex items-center space-x-1" id="positionMiniChart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-<!-- Top Performing Pages Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-medium text-neutral-800">Top Performing Pages</h3>
-    <button id="viewAllPagesBtn" class="material-btn">View All</button>
-  </div>
-  <div class="overflow-x-auto">
-    <table class="min-w-full">
-      <thead>
-        <tr class="border-b border-neutral-200">
-          <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-        </tr>
-      </thead>
-      <tbody id="topPagesTable"></tbody>
-    </table>
-  </div>
-</div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="material-card bg-white p-5" id="performanceChartCard">
+              <h3 class="text-lg font-medium text-neutral-800 mb-4">Performance Trends</h3>
+              <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+              </div>
+            </div>
+            <div class="material-card bg-white p-5" id="deviceBreakdownChartCard">
+              <h3 class="text-lg font-medium text-neutral-800 mb-4">Device Breakdown</h3>
+              <div class="chart-container">
+                <canvas id="deviceBreakdownChart"></canvas>
+              </div>
+            </div>
+          </div>
 
-<!-- Top Keywords Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <div class="flex items-center justify-between mb-4">
-    <h3 class="text-lg font-medium text-neutral-800">Top Keywords</h3>
-    <button id="viewAllKeywordsBtn" class="material-btn">View All</button>
-  </div>
-  <div class="overflow-x-auto">
-    <table class="min-w-full">
-      <thead>
-        <tr class="border-b border-neutral-200">
-          <th class="py-3 text-left text-sm font-medium text-neutral-500">Keyword</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-          <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-        </tr>
-      </thead>
-      <tbody id="topKeywordsTable"></tbody>
-    </table>
-  </div>
-</div>
+          <div class="material-card bg-white p-5 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-neutral-800">Top Performing Pages</h3>
+              <button id="viewAllPagesBtn" class="material-btn">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Page</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Clicks</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Impressions</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">CTR</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Position</th>
+                  </tr>
+                </thead>
+                <tbody id="topPagesTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="5" class="py-3 text-center text-neutral-500">Loading top pages...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-<!-- Opportunities Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <h3 class="text-lg font-medium text-neutral-800 mb-4">SEO Opportunities</h3>
-  <table class="min-w-full">
-    <thead>
-      <tr class="border-b border-neutral-200">
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Opportunity</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Description</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Priority</th>
-      </tr>
-    </thead>
-    <tbody id="opportunitiesTable"></tbody>
-  </table>
-</div>
+          <div class="material-card bg-white p-5 mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-medium text-neutral-800">Top Performing Keywords</h3>
+              <button id="viewAllKeywordsBtn" class="material-btn">View All</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Keyword</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Clicks</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Impressions</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">CTR</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Position</th>
+                  </tr>
+                </thead>
+                <tbody id="topKeywordsTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="5" class="py-3 text-center text-neutral-500">Loading top keywords...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-<!-- Errors Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <h3 class="text-lg font-medium text-neutral-800 mb-4">Site Errors</h3>
-  <table class="min-w-full">
-    <thead>
-      <tr class="border-b border-neutral-200">
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Error</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Description</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Status</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Fix</th>
-      </tr>
-    </thead>
-    <tbody id="errorsTable"></tbody>
-  </table>
-</div>
-
-<!-- Indexing Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <h3 class="text-lg font-medium text-neutral-800 mb-4">Indexing Status</h3>
-  <table class="min-w-full">
-    <thead>
-      <tr class="border-b border-neutral-200">
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Status</th>
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Last Crawled</th>
-      </tr>
-    </thead>
-    <tbody id="indexingTable"></tbody>
-  </table>
-</div>
-
-<!-- Analytics Table -->
-<div class="material-card bg-white p-5 mb-8">
-  <h3 class="text-lg font-medium text-neutral-800 mb-4">Analytics Overview</h3>
-  <table class="min-w-full">
-    <thead>
-      <tr class="border-b border-neutral-200">
-        <th class="py-3 text-left text-sm font-medium text-neutral-500">Date</th>
-        <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-        <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-        <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-        <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-      </tr>
-    </thead>
-    <tbody id="analyticsTable"></tbody>
-  </table>
-</div>
-        </div>
-        <div id="opportunities" class="tab-content">
+        </div> <div id="opportunities" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">SEO Opportunities</h3>
-            <button class="get-suggestions-btn material-btn" data-issue="SEO Opportunity">Get Suggestions</button>
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-neutral-600">Discover areas for search engine optimization improvement.</p>
+              <select id="opportunitySortSelect" class="border border-neutral-300 rounded px-2 py-1">
+                <option value="impact">Impact</option>
+                <option value="difficulty">Difficulty</option>
+                <option value="recent">Most Recent</option>
+              </select>
+            </div>
+            <button class="get-suggestions-btn material-btn mb-4" data-issue="SEO Opportunity">Get Suggestions</button>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Opportunity</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Description</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Priority</th>
+                  </tr>
+                </thead>
+                <tbody id="opportunitiesTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="3" class="py-3 text-center text-neutral-500">Loading opportunities...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
         <div id="errors" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Site Errors</h3>
-            <button class="fix-now-btn material-btn" data-issue="404 Error">Fix Now</button>
-            <button class="view-details-btn material-btn" data-issue="Slow Load">View Details</button>
-            <button class="view-issues-btn material-btn" data-issue="Broken Links">View Issues</button>
+            <p class="text-neutral-600 mb-4">Monitor and resolve critical website errors affecting search performance.</p>
+            <div class="flex space-x-2 mb-4">
+              <button class="fix-now-btn material-btn" data-issue="404 Error">Fix Now</button>
+              <button class="view-details-btn material-btn" data-issue="Slow Load">View Details</button>
+              <button class="view-issues-btn material-btn" data-issue="Broken Links">View Issues</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Error Type</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Description</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Affected Page</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Status</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Suggested Fix</th>
+                  </tr>
+                </thead>
+                <tbody id="errorsTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="5" class="py-3 text-center text-neutral-500">Loading errors...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
         <div id="indexing" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Indexing Status</h3>
-            <span class="status-indicator status-good"></span> All good!
+            <p class="text-neutral-600 mb-4">Overview of how Google is indexing your site's pages.</p>
+            <span class="status-indicator status-good"></span> All good! <div class="overflow-x-auto mt-4">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Page</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Status</th>
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Last Crawled</th>
+                  </tr>
+                </thead>
+                <tbody id="indexingTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="3" class="py-3 text-center text-neutral-500">Loading indexing data...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
         <div id="analytics" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Analytics Overview</h3>
-            <button id="viewAllKeywordsBtn" class="material-btn">View All</button>
+            <p class="text-neutral-600 mb-4">Gain insights into user behavior with Google Analytics data.</p>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-neutral-200">
+                <thead>
+                  <tr class="border-b border-neutral-200">
+                    <th class="py-3 text-left text-sm font-medium text-neutral-500 px-4">Date</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Clicks (GA)</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Impressions (GA)</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">CTR (GA)</th>
+                    <th class="py-3 text-right text-sm font-medium text-neutral-500 px-4">Position (GA)</th>
+                  </tr>
+                </thead>
+                <tbody id="analyticsTable" class="divide-y divide-neutral-100">
+                  <tr><td colspan="5" class="py-3 text-center text-neutral-500">Loading analytics data...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
       </div>
     </main>
   </div>
 
-  <!-- Modal for dynamic popups -->
   <div id="genericModal" class="modal">
-    <div class="modal-content">
-      <button id="closeModal" type="button" aria-label="Close">&times;</button>
-      <h2 id="modalTitle"></h2>
-      <div id="modalBody"></div>
+    <div class="modal-content p-6 relative">
+      <button id="closeModal" type="button" aria-label="Close" class="absolute top-2 right-2 text-3xl font-light leading-none text-neutral-500 hover:text-neutral-700">&times;</button>
+      <h2 id="modalTitle" class="text-xl font-semibold mb-4"></h2>
+      <div id="modalBody" class="text-neutral-700"></div>
     </div>
   </div>
-</body>
-  <script>
+
+<script>
 // ==== CONFIG: Set your deployed Apps Script endpoint here! ====
-const API_BASE = 'https://script.google.com/macros/s/AKfycbwQ2jEJCTfEX1DzRolqnNGbKRVJmqRGHgk2bGPXKBPYMZX8y5K5PZ8FtIyQeGCdCkn_/exec';
+// IMPORTANT: Replace this with YOUR DEPLOYED APPS SCRIPT WEB APP URL.
+// Example: https://script.google.com/macros/s/AKfycb.../exec
+const API_BASE = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // <--- REPLACE THIS LINE
+
+let currentSite = 'https://www.example.com/'; // Default GSC property URL (REPLACE with your domain)
+let currentStartDate = '';
+let currentEndDate = '';
 
 // ==== Utility: Fetch Helper ====
-async function fetchAPI(path) {
-  const url = `${API_BASE}?path=${encodeURIComponent(path)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
+async function fetchAPI(path, params = {}) {
+  const urlParams = new URLSearchParams(params);
+  urlParams.append('path', path);
+  urlParams.append('siteUrl', currentSite);
+  urlParams.append('startDate', currentStartDate);
+  urlParams.append('endDate', currentEndDate);
 
-// ==== Metrics Cards ====
-async function loadMetrics() {
+  const url = `${API_BASE}?${urlParams.toString()}`;
   try {
-    const data = await fetchAPI('metrics');
-    document.getElementById('totalClicks').textContent = data.totalClicks ?? '--';
-    document.getElementById('clicksChange').textContent = (data.clicksChange ?? '--') + '%';
-    document.getElementById('clicksTrendIcon').textContent = (data.clicksChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
-
-    document.getElementById('totalImpressions').textContent = data.totalImpressions ?? '--';
-    document.getElementById('impressionsChange').textContent = (data.impressionsChange ?? '--') + '%';
-    document.getElementById('impressionsTrendIcon').textContent = (data.impressionsChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
-
-    document.getElementById('averageCTR').textContent = (data.averageCTR ?? '--') + '%';
-    document.getElementById('ctrChange').textContent = (data.ctrChange ?? '--') + '%';
-    document.getElementById('ctrTrendIcon').textContent = (data.ctrChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
-
-    document.getElementById('averagePosition').textContent = data.averagePosition ?? '--';
-    document.getElementById('positionChange').textContent = data.positionChange ?? '--';
-    document.getElementById('positionTrendIcon').textContent = (data.positionChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
-
-    // Optional: Update SVG donut for CTR
-    if (typeof data.averageCTR === 'number') {
-      const percent = Math.max(0, Math.min(100, data.averageCTR));
-      const dasharray = 282.7;
-      const dashoffset = dasharray - (dasharray * percent) / 100;
-      document.getElementById('ctrCircle').setAttribute('stroke-dashoffset', dashoffset);
-      document.getElementById('ctrText').textContent = percent + '%';
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`API error: ${res.status} - ${errorText}`);
     }
-
-    // Optionally update mini charts if you wish
-    document.getElementById('clicksMiniChart').innerHTML = ...
+    return res.json();
   } catch (err) {
-    console.error('Failed to load metrics:', err);
+    console.error(`Failed to fetch ${path}:`, err);
+    throw err; // Re-throw to be caught by individual load functions
   }
 }
 
-// ==== Top Performing Pages Table ====
-async function loadTopPages() {
-  try {
-    const data = await fetchAPI('top-pages');
-    const tbody = document.getElementById('topPagesTable');
-    tbody.innerHTML = '';
-    data.topPages.forEach(page => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${page.Page || ''}</td>
-          <td class="text-right">${page.Clicks ?? '--'}</td>
-          <td class="text-right">${page.Impressions ?? '--'}</td>
-          <td class="text-right">${page.CTR ?? '--'}%</td>
-          <td class="text-right">${page.Position ?? '--'}</td>
-        </tr>
-      `;
+// ==== General UI Functions ====
+
+// Dropdown Toggle Logic
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".dropdown").forEach(dropdown => {
+    const btn = dropdown.querySelector("button") || dropdown.querySelector(".material-card"); // Handles both button and card triggers
+    const content = dropdown.querySelector(".dropdown-content");
+    btn?.addEventListener("click", e => {
+      e.stopPropagation(); // Prevent window click from closing immediately
+      document.querySelectorAll(".dropdown-content").forEach(el => {
+        if (el !== content) el.classList.remove("show"); // Close other dropdowns
+      });
+      content?.classList.toggle("show");
     });
-  } catch (err) {
-    document.getElementById('topPagesTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
-    console.error('Failed to load top pages:', err);
-  }
-}
+  });
 
-// ==== Top Keywords Table (add element with id="topKeywordsTable" in HTML) ====
-async function loadTopKeywords() {
-  try {
-    const data = await fetchAPI('top-keywords');
-    const tbody = document.getElementById('topKeywordsTable');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.topKeywords.forEach(kw => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${kw.Keyword || ''}</td>
-          <td class="text-right">${kw.Clicks ?? '--'}</td>
-          <td class="text-right">${kw.Impressions ?? '--'}</td>
-          <td class="text-right">${kw.CTR ?? '--'}%</td>
-          <td class="text-right">${kw.Position ?? '--'}</td>
-        </tr>
-      `;
+  // Close dropdowns when clicking outside
+  window.addEventListener("click", () => {
+    document.querySelectorAll(".dropdown-content").forEach(el => el.classList.remove("show"));
+  });
+
+  // Tab Switching Logic
+  document.querySelectorAll(".tab-btn").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("tab-active"));
+      tab.classList.add("tab-active");
+      const tabId = tab.dataset.tab;
+      document.querySelectorAll(".tab-content").forEach(tc => {
+        tc.classList.remove("active");
+        if (tc.id === tabId) tc.classList.add("active");
+      });
+      // Re-load data for the active tab (optional, can be done once on page load)
+      loadDataForTab(tabId);
     });
-  } catch (err) {
-    if (document.getElementById('topKeywordsTable'))
-      document.getElementById('topKeywordsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
-    console.error('Failed to load top keywords:', err);
-  }
-}
+  });
 
-// ==== Opportunities Table/List (add element with id="opportunitiesTable" in HTML) ====
-async function loadOpportunities() {
-  try {
-    const data = await fetchAPI('opportunities');
-    const tbody = document.getElementById('opportunitiesTable');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.opportunities.forEach(opp => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${opp.Opportunity || ''}</td>
-          <td>${opp.Description || ''}</td>
-          <td>${opp.Priority || ''}</td>
-        </tr>
-      `;
+  // Generic Modal Functions
+  const genericModal = document.getElementById("genericModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const closeModalBtn = document.getElementById("closeModal");
+
+  function showModal(title, content) {
+    modalTitle.textContent = title;
+    modalBody.innerHTML = content; // Use innerHTML for richer content if needed
+    genericModal.classList.add("show");
+  }
+
+  function closeModal() {
+    genericModal.classList.remove("show");
+  }
+
+  closeModalBtn.addEventListener("click", closeModal);
+  genericModal.addEventListener("click", (e) => { // Close modal when clicking outside content
+    if (e.target === genericModal) closeModal();
+  });
+
+
+  // Date Range Selection
+  document.querySelectorAll(".date-range-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".date-range-btn").forEach(b => {
+        b.classList.remove("bg-primary-600", "text-white");
+        b.classList.add("bg-white", "text-neutral-700", "border", "border-neutral-300");
+      });
+      btn.classList.remove("bg-white", "text-neutral-700", "border", "border-neutral-300");
+      btn.classList.add("bg-primary-600", "text-white");
+
+      const range = parseInt(btn.dataset.range);
+      const today = new Date();
+      const endDateObj = new Date(today);
+      const startDateObj = new Date(today);
+      startDateObj.setDate(today.getDate() - range + 1); // +1 because "Last 28 days" includes today
+
+      currentStartDate = formatDate(startDateObj);
+      currentEndDate = formatDate(endDateObj);
+
+      document.getElementById('startDate').value = currentStartDate;
+      document.getElementById('endDate').value = currentEndDate;
+
+      loadAllData(); // Reload data for new date range
     });
-  } catch (err) {
-    if (document.getElementById('opportunitiesTable'))
-      document.getElementById('opportunitiesTable').innerHTML = '<tr><td colspan="3">Failed to load data</td></tr>';
-    console.error('Failed to load opportunities:', err);
-  }
-}
+  });
 
-// ==== Errors Table/List (add element with id="errorsTable" in HTML) ====
-async function loadErrors() {
-  try {
-    const data = await fetchAPI('errors');
-    const tbody = document.getElementById('errorsTable');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.errors.forEach(errObj => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${errObj.Error || ''}</td>
-          <td>${errObj.Description || ''}</td>
-          <td>${errObj.Page || ''}</td>
-          <td>${errObj.Status || ''}</td>
-          <td>${errObj.Fix || ''}</td>
-        </tr>
-      `;
+  document.getElementById("applyDateRange")?.addEventListener("click", () => {
+    currentStartDate = document.getElementById('startDate').value;
+    currentEndDate = document.getElementById('endDate').value;
+    loadAllData();
+  });
+
+  // Helper to format date as YYYY-MM-DD
+  function formatDate(date) {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Set initial date range to Last 28 days
+  document.querySelector('.date-range-btn[data-range="28"]').click();
+
+  // Site Selector Logic
+  document.querySelectorAll("#siteDropdown li").forEach(siteLi => {
+    siteLi.addEventListener("click", (e) => {
+      const selectedSite = e.currentTarget.dataset.site;
+      if (selectedSite) {
+        document.getElementById('selectedSite').textContent = selectedSite.replace('https://www.', '').replace('https://', '').replace('/', '');
+        currentSite = selectedSite;
+        document.getElementById('siteDropdown').classList.remove('show');
+        loadAllData(); // Reload all data for the new site
+      } else if (e.currentTarget.id === 'addNewSite') {
+        showModal('Add New Property', 'Please use Google Search Console to add a new property first, then update the site list in the HTML.');
+      }
     });
-  } catch (err) {
-    if (document.getElementById('errorsTable'))
-      document.getElementById('errorsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
-    console.error('Failed to load errors:', err);
-  }
-}
+  });
 
-// ==== Indexing Table/List (add element with id="indexingTable" in HTML) ====
-async function loadIndexing() {
-  try {
-    const data = await fetchAPI('indexing');
-    const tbody = document.getElementById('indexingTable');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.indexing.forEach(idx => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${idx.Page || ''}</td>
-          <td>${idx.Status || ''}</td>
-          <td>${idx.LastCrawled || ''}</td>
-        </tr>
-      `;
+  // Example button interactions (using generic modal)
+  document.getElementById("viewAllPagesBtn")?.addEventListener("click", () => {
+    // In a real scenario, you'd fetch all pages data and display it here
+    showModal("All Top Pages", "This modal would display a comprehensive list of all top performing pages, potentially with filtering/sorting options.");
+  });
+
+  document.getElementById("viewAllKeywordsBtn")?.addEventListener("click", () => {
+    // In a real scenario, you'd fetch all keywords data and display it here
+    showModal("All Top Keywords", "This modal would display a comprehensive list of all top performing keywords.");
+  });
+
+  document.querySelectorAll("#profileDropdown a").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault(); // Prevent navigation
+      const action = e.currentTarget.textContent.trim();
+      showModal("Profile Option Selected", `You selected: ${action}`);
     });
-  } catch (err) {
-    if (document.getElementById('indexingTable'))
-      document.getElementById('indexingTable').innerHTML = '<tr><td colspan="3">Failed to load data</td></tr>';
-    console.error('Failed to load indexing:', err);
-  }
-}
+  });
 
-// ==== Analytics Table/List (add element with id="analyticsTable" in HTML) ====
-async function loadAnalytics() {
-  try {
-    const data = await fetchAPI('analytics');
-    const tbody = document.getElementById('analyticsTable');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    data.analytics.forEach(row => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${row.Date || ''}</td>
-          <td class="text-right">${row.Clicks ?? '--'}</td>
-          <td class="text-right">${row.Impressions ?? '--'}</td>
-          <td class="text-right">${row.CTR ?? '--'}%</td>
-          <td class="text-right">${row.Position ?? '--'}</td>
-        </tr>
-      `;
+  document.querySelectorAll(".fix-now-btn, .view-details-btn, .view-issues-btn, .get-suggestions-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const issue = btn.getAttribute("data-issue");
+      showModal("Issue Detail", `Details for: ${issue || 'N/A'}. This would show specific recommendations or affected URLs.`);
     });
-  } catch (err) {
-    if (document.getElementById('analyticsTable'))
-      document.getElementById('analyticsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
-    console.error('Failed to load analytics:', err);
+  });
+
+  // Opportunity Sort (placeholder)
+  document.getElementById('opportunitySortSelect')?.addEventListener('change', function(e) {
+    const sortType = e.target.value;
+    console.log(`Sorting opportunities by: ${sortType}`);
+    // Implement actual sorting logic here (e.g., re-render table rows)
+  });
+
+
+  // ==== CHARTS: Chart.js Render Functions ====
+  let performanceChartInstance;
+  let deviceBreakdownChartInstance;
+
+  function renderPerformanceChart(data) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    if (performanceChartInstance) {
+      performanceChartInstance.destroy(); // Destroy old chart instance if exists
+    }
+    performanceChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.labels, // e.g., ['2024-06-01', '2024-06-02', ...]
+        datasets: [{
+          label: 'Clicks',
+          data: data.clicks,
+          borderColor: '#1976d2',
+          tension: 0.1,
+          fill: false
+        }, {
+          label: 'Impressions',
+          data: data.impressions,
+          borderColor: '#42a5f5',
+          tension: 0.1,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: false,
+            text: 'Performance Trends'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
   }
-}
+
+  function renderDeviceBreakdown(data) {
+    const ctx = document.getElementById('deviceBreakdownChart').getContext('2d');
+    if (deviceBreakdownChartInstance) {
+      deviceBreakdownChartInstance.destroy(); // Destroy old chart instance if exists
+    }
+    deviceBreakdownChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: data.labels, // e.g., ['Desktop', 'Mobile', 'Tablet']
+        datasets: [{
+          data: data.values,
+          backgroundColor: ['#1976d2', '#42a5f5', '#90caf9'],
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+          },
+          title: {
+            display: false,
+            text: 'Device Breakdown'
+          }
+        }
+      }
+    });
+  }
 
 
-// ==== INIT: Load All Data on Page Load ====
+  // ==== Data Loading Functions ====
 
-document.addEventListener('DOMContentLoaded', function() {
-  loadMetrics();
-  loadTopPages();
-  loadTopKeywords();
-  loadOpportunities();
-  loadErrors();
-  loadIndexing();
-  loadAnalytics();
+  async function loadMetrics() {
+    try {
+      const data = await fetchAPI('metrics');
+      document.getElementById('totalClicks').textContent = (data.totalClicks !== undefined && data.totalClicks !== null) ? data.totalClicks.toLocaleString() : '--';
+      document.getElementById('clicksChange').textContent = (data.clicksChange !== undefined && data.clicksChange !== null) ? `${data.clicksChange}%` : '--';
+      document.getElementById('clicksTrendIcon').textContent = (data.clicksChange !== undefined && data.clicksChange !== null && parseFloat(data.clicksChange) >= 0) ? 'arrow_upward' : 'arrow_downward';
+      document.getElementById('clicksTrendIcon').className = `material-icons text-${(data.clicksChange !== undefined && data.clicksChange !== null && parseFloat(data.clicksChange) >= 0) ? 'green' : 'red'}-500 text-sm`;
+
+
+      document.getElementById('totalImpressions').textContent = (data.totalImpressions !== undefined && data.totalImpressions !== null) ? data.totalImpressions.toLocaleString() : '--';
+      document.getElementById('impressionsChange').textContent = (data.impressionsChange !== undefined && data.impressionsChange !== null) ? `${data.impressionsChange}%` : '--';
+      document.getElementById('impressionsTrendIcon').textContent = (data.impressionsChange !== undefined && data.impressionsChange !== null && parseFloat(data.impressionsChange) >= 0) ? 'arrow_upward' : 'arrow_downward';
+      document.getElementById('impressionsTrendIcon').className = `material-icons text-${(data.impressionsChange !== undefined && data.impressionsChange !== null && parseFloat(data.impressionsChange) >= 0) ? 'green' : 'red'}-500 text-sm`;
+
+      document.getElementById('averageCTR').textContent = (data.averageCTR !== undefined && data.averageCTR !== null) ? `${data.averageCTR}%` : '--';
+      document.getElementById('ctrChange').textContent = (data.ctrChange !== undefined && data.ctrChange !== null) ? `${data.ctrChange}%` : '--';
+      document.getElementById('ctrTrendIcon').textContent = (data.ctrChange !== undefined && data.ctrChange !== null && parseFloat(data.ctrChange) >= 0) ? 'arrow_upward' : 'arrow_downward';
+      document.getElementById('ctrTrendIcon').className = `material-icons text-${(data.ctrChange !== undefined && data.ctrChange !== null && parseFloat(data.ctrChange) >= 0) ? 'green' : 'red'}-500 text-sm`;
+
+
+      document.getElementById('averagePosition').textContent = (data.averagePosition !== undefined && data.averagePosition !== null) ? data.averagePosition : '--';
+      // For position, 'upward' trend means lower number (better position)
+      document.getElementById('positionChange').textContent = (data.positionChange !== undefined && data.positionChange !== null) ? `${data.positionChange}` : '--';
+      document.getElementById('positionTrendIcon').textContent = (data.positionChange !== undefined && data.positionChange !== null && parseFloat(data.positionChange) <= 0) ? 'arrow_downward' : 'arrow_upward';
+      document.getElementById('positionTrendIcon').className = `material-icons text-${(data.positionChange !== undefined && data.positionChange !== null && parseFloat(data.positionChange) <= 0) ? 'green' : 'red'}-500 text-sm`;
+
+      // Update SVG donut for CTR
+      if (typeof data.averageCTR === 'number') {
+        const percent = Math.max(0, Math.min(100, data.averageCTR));
+        const dasharray = 282.7; // Circumference of a circle with r=45 (2*PI*45)
+        const dashoffset = dasharray - (dasharray * percent) / 100;
+        document.getElementById('ctrCircle').setAttribute('stroke-dashoffset', dashoffset);
+        document.getElementById('ctrText').textContent = `${percent.toFixed(1)}%`;
+      }
+      // Placeholder data for charts if API doesn't provide granular data
+      renderPerformanceChart({
+        labels: ['Jun 10', 'Jun 11', 'Jun 12', 'Jun 13', 'Jun 14', 'Jun 15', 'Jun 16'],
+        clicks: [2500, 2700, 2600, 2800, 3000, 2900, 3100],
+        impressions: [80000, 85000, 82000, 88000, 92000, 90000, 95000]
+      });
+      renderDeviceBreakdown({
+        labels: ['Desktop', 'Mobile', 'Tablet'],
+        values: [65, 30, 5]
+      });
+
+    } catch (err) {
+      console.error('Failed to load metrics:', err);
+      document.getElementById('totalClicks').textContent = 'Error';
+      document.getElementById('totalImpressions').textContent = 'Error';
+      document.getElementById('averageCTR').textContent = 'Error';
+      document.getElementById('averagePosition').textContent = 'Error';
+    }
+  }
+
+  async function loadTopPages() {
+    try {
+      const data = await fetchAPI('top-pages');
+      const tbody = document.getElementById('topPagesTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.topPages && data.topPages.length > 0) {
+        data.topPages.forEach(page => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4"><a href="${page.Page}" target="_blank" class="text-primary-600 hover:underline">${page.Page || ''}</a></td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(page.Clicks ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(page.Impressions ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(page.CTR ?? '--')}%</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${page.Position ?? '--'}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-center text-neutral-500">No top pages data available.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('topPagesTable').innerHTML = '<tr><td colspan="5" class="py-3 text-center text-red-500">Failed to load top pages.</td></tr>';
+      console.error('Failed to load top pages:', err);
+    }
+  }
+
+  async function loadTopKeywords() {
+    try {
+      const data = await fetchAPI('top-keywords');
+      const tbody = document.getElementById('topKeywordsTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.topKeywords && data.topKeywords.length > 0) {
+        data.topKeywords.forEach(kw => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4">${kw.Keyword || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(kw.Clicks ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(kw.Impressions ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(kw.CTR ?? '--')}%</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${kw.Position ?? '--'}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-center text-neutral-500">No top keywords data available.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('topKeywordsTable').innerHTML = '<tr><td colspan="5" class="py-3 text-center text-red-500">Failed to load top keywords.</td></tr>';
+      console.error('Failed to load top keywords:', err);
+    }
+  }
+
+  async function loadOpportunities() {
+    try {
+      const data = await fetchAPI('opportunities');
+      const tbody = document.getElementById('opportunitiesTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.opportunities && data.opportunities.length > 0) {
+        data.opportunities.forEach(opp => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4">${opp.Opportunity || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${opp.Description || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${opp.Priority || ''}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-3 text-center text-neutral-500">No SEO opportunities found.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('opportunitiesTable').innerHTML = '<tr><td colspan="3" class="py-3 text-center text-red-500">Failed to load opportunities.</td></tr>';
+      console.error('Failed to load opportunities:', err);
+    }
+  }
+
+  async function loadErrors() {
+    try {
+      const data = await fetchAPI('errors');
+      const tbody = document.getElementById('errorsTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.errors && data.errors.length > 0) {
+        data.errors.forEach(errObj => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4">${errObj.Error || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${errObj.Description || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${errObj.Page || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${errObj.Status || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${errObj.Fix || ''}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-center text-neutral-500">No site errors detected.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('errorsTable').innerHTML = '<tr><td colspan="5" class="py-3 text-center text-red-500">Failed to load errors.</td></tr>';
+      console.error('Failed to load errors:', err);
+    }
+  }
+
+  async function loadIndexing() {
+    try {
+      const data = await fetchAPI('indexing');
+      const tbody = document.getElementById('indexingTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.indexing && data.indexing.length > 0) {
+        data.indexing.forEach(idx => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4">${idx.Page || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${idx.Status || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 px-4">${idx.LastCrawled || ''}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-3 text-center text-neutral-500">No indexing data available.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('indexingTable').innerHTML = '<tr><td colspan="3" class="py-3 text-center text-red-500">Failed to load indexing data.</td></tr>';
+      console.error('Failed to load indexing:', err);
+    }
+  }
+
+  async function loadAnalytics() {
+    try {
+      const data = await fetchAPI('analytics');
+      const tbody = document.getElementById('analyticsTable');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (data.analytics && data.analytics.length > 0) {
+        data.analytics.forEach(row => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-neutral-50">
+              <td class="py-2 text-sm text-neutral-800 px-4">${row.Date || ''}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(row.Clicks ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(row.Impressions ?? '--').toLocaleString()}</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${(row.CTR ?? '--')}%</td>
+              <td class="py-2 text-sm text-neutral-800 text-right px-4">${row.Position ?? '--'}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-center text-neutral-500">No analytics data available.</td></tr>';
+      }
+    } catch (err) {
+      document.getElementById('analyticsTable').innerHTML = '<tr><td colspan="5" class="py-3 text-center text-red-500">Failed to load analytics data.</td></tr>';
+      console.error('Failed to load analytics:', err);
+    }
+  }
+
+  // ==== Combined Data Loading and Initial State ====
+  function loadAllData() {
+    loadMetrics();
+    loadTopPages();
+    loadTopKeywords();
+    // Load other tabs data only if they are active, or load them lazily
+    const activeTab = document.querySelector('.tab-btn.tab-active')?.dataset.tab;
+    if (activeTab) {
+      loadDataForTab(activeTab);
+    }
+  }
+
+  function loadDataForTab(tabId) {
+    switch (tabId) {
+      case 'performance':
+        // Metrics, Top Pages, Top Keywords are already handled by loadAllData
+        break;
+      case 'opportunities':
+        loadOpportunities();
+        break;
+      case 'errors':
+        loadErrors();
+        break;
+      case 'indexing':
+        loadIndexing();
+        break;
+      case 'analytics':
+        loadAnalytics();
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Initial load
+  loadAllData();
 });
-
 </script>
+</body>
 </html>
