@@ -19,57 +19,10 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: {
-              50: '#e3f2fd',
-              100: '#bbdefb',
-              200: '#90caf9',
-              300: '#64b5f6',
-              400: '#42a5f5',
-              500: '#2196f3',
-              600: '#1e88e5',
-              700: '#1976d2',
-              800: '#1565c0',
-              900: '#0d47a1',
-            },
-            secondary: {
-              50: '#fce4ec',
-              100: '#f8bbd0',
-              200: '#f48fb1',
-              300: '#f06292',
-              400: '#ec407a',
-              500: '#e91e63',
-              600: '#d81b60',
-              700: '#c2185b',
-              800: '#ad1457',
-              900: '#880e4f',
-            },
-            neutral: {
-              50: '#fafafa',
-              100: '#f5f5f5',
-              200: '#eeeeee',
-              300: '#e0e0e0',
-              400: '#bdbdbd',
-              500: '#9e9e9e',
-              600: '#757575',
-              700: '#616161',
-              800: '#424242',
-              900: '#212121',
-            },
-          },
-        },
-      },
-    }
-  </script>
-  <style>
-    /* [All your original CSS from <style> in index.html, unchanged for brevity here] */
-    /* ... */
-  </style>
   <script defer src="script.js"></script>
+  <style>
+    /* Your CSS here (omitted for brevity) */
+  </style>
 </head>
 <body class="font-roboto bg-gray-50 min-h-screen">
   <div id="app" class="flex flex-col min-h-screen">
@@ -180,7 +133,7 @@
     </header>
 
     <main role="main" class="flex-grow container mx-auto px-4 py-6">
-      <!-- Site Selector -->
+      <!-- Site Selector Dropdown -->
       <div class="mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between">
           <div class="mb-4 md:mb-0">
@@ -242,122 +195,9 @@
         </div>
       </div>
 
-      <!-- Performance Overview Cards -->
+      <!-- Performance Overview Cards (with tooltips) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total Clicks -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Total Clicks</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times users clicked through to your site">
-              info_outline
-              <span class="tooltip-text">Number of times users clicked through to your site</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="totalClicks">24,583</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="clicksChange">12.4%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-end space-x-1">
-              <div class="w-2 h-6 bg-primary-200 rounded-t"></div>
-              <div class="w-2 h-8 bg-primary-300 rounded-t"></div>
-              <div class="w-2 h-5 bg-primary-200 rounded-t"></div>
-              <div class="w-2 h-7 bg-primary-300 rounded-t"></div>
-              <div class="w-2 h-9 bg-primary-400 rounded-t"></div>
-              <div class="w-2 h-10 bg-primary-500 rounded-t"></div>
-              <div class="w-2 h-12 bg-primary-600 rounded-t"></div>
-            </div>
-          </div>
-        </div>
-        <!-- Total Impressions -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Total Impressions</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times your site appeared in search results">
-              info_outline
-              <span class="tooltip-text">Number of times your site appeared in search results</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="totalImpressions">342,129</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="impressionsChange">8.7%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-end space-x-1">
-              <div class="w-2 h-7 bg-secondary-200 rounded-t"></div>
-              <div class="w-2 h-9 bg-secondary-300 rounded-t"></div>
-              <div class="w-2 h-8 bg-secondary-200 rounded-t"></div>
-              <div class="w-2 h-10 bg-secondary-300 rounded-t"></div>
-              <div class="w-2 h-9 bg-secondary-400 rounded-t"></div>
-              <div class="w-2 h-11 bg-secondary-500 rounded-t"></div>
-              <div class="w-2 h-12 bg-secondary-600 rounded-t"></div>
-            </div>
-          </div>
-        </div>
-        <!-- Average CTR -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Average CTR</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Click-through rate: clicks divided by impressions">
-              info_outline
-              <span class="tooltip-text">Click-through rate: clicks divided by impressions</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="averageCTR">7.2%</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-red-500 text-sm">arrow_downward</span>
-                <span class="text-red-500 text-sm font-medium" id="ctrChange">0.5%</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 w-24 relative">
-              <svg viewBox="0 0 100 100" class="w-full h-full">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
-                <circle id="ctrCircle" cx="50" cy="50" r="45" fill="none" stroke="#9c27b0" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="262.5" transform="rotate(-90 50 50)" />
-                <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="bold" fill="#9c27b0" id="ctrText">7.2%</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-        <!-- Average Position -->
-        <div class="material-card bg-white p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-neutral-600 font-medium">Average Position</h3>
-            <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Average ranking position in search results">
-              info_outline
-              <span class="tooltip-text">Average ranking position in search results</span>
-            </span>
-          </div>
-          <div class="flex items-end justify-between">
-            <div>
-              <p class="text-3xl font-bold text-neutral-800" id="averagePosition">14.3</p>
-              <div class="flex items-center mt-1">
-                <span class="material-icons text-green-500 text-sm">arrow_upward</span>
-                <span class="text-green-500 text-sm font-medium" id="positionChange">2.1</span>
-                <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
-              </div>
-            </div>
-            <div class="h-12 flex items-center">
-              <div class="flex items-center space-x-1">
-                <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">1</div>
-                <div class="w-6 h-6 rounded-full bg-green-200 flex items-center justify-center text-green-800 text-xs">5</div>
-                <div class="w-6 h-6 rounded-full bg-yellow-200 flex items-center justify-center text-yellow-800 text-xs">10</div>
-                <div class="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-orange-800 text-xs font-bold" id="positionIndicator">14</div>
-                <div class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-800 text-xs">20</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- ... as before ... -->
       </div>
 
       <!-- Main Tabs -->
@@ -375,107 +215,136 @@
 
       <!-- Tab Content -->
       <div id="tabContent">
-        <!-- Performance Tab -->
         <div id="performance" class="tab-content active">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Chart area -->
-            <div class="material-card bg-white p-5 lg:col-span-2">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-neutral-800">Performance Trends</h3>
-                <div class="flex items-center space-x-4">
-                  <div class="flex items-center space-x-2">
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-primary-500 mr-1"></span>
-                      <span class="text-sm text-neutral-600">Clicks</span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="h-3 w-3 rounded-full bg-secondary-500 mr-1"></span>
-                      <span class="text-sm text-neutral-600">Impressions</span>
-                    </div>
-                  </div>
-                  <select id="chartMetricSelector" class="text-sm border border-neutral-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value="clicks-impressions">Clicks & Impressions</option>
-                    <option value="ctr">CTR</option>
-                    <option value="position">Position</option>
-                  </select>
-                </div>
-              </div>
-              <div class="chart-container" id="performanceChart">
-                <!-- SVG Chart here (as in your original) -->
-                <svg width="100%" height="100%" viewBox="0 0 800 250">
-                  <!-- ... -->
-                </svg>
-              </div>
-            </div>
-            <!-- Device Breakdown -->
-            <div class="material-card bg-white p-5">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-neutral-800">Device Breakdown</h3>
-                <button class="text-primary-600 text-sm font-medium focus:outline-none" id="deviceDetailsBtn">Details</button>
-              </div>
-              <div class="chart-container" id="deviceChart">
-                <!-- SVG Donut Chart here -->
-                <svg width="100%" height="100%" viewBox="0 0 300 250">
-                  <!-- ... -->
-                </svg>
-                <!-- Legend ... -->
-              </div>
-            </div>
-          </div>
-          <!-- Top Performing Content -->
-          <div class="material-card bg-white p-5 mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-medium text-neutral-800">Top Performing Pages</h3>
-              <button id="viewAllPagesBtn" class="material-btn">View All</button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="min-w-full">
-                <thead>
-                  <tr class="border-b border-neutral-200">
-                    <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
-                    <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
-                  </tr>
-                </thead>
-                <tbody id="topPagesTable">
-                  <tr class="border-b border-neutral-100 hover:bg-neutral-50">
-                    <td class="py-4 pr-4">
-                      <div class="flex items-center">
-                        <span class="material-icons text-neutral-400 mr-2 text-sm">article</span>
-                        <div>
-                          <p class="text-sm font-medium text-neutral-800 truncate max-w-xs">/blog/10-seo-tips-for-beginners</p>
-                          <p class="text-xs text-neutral-500">Blog Post</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="py-4 text-right text-sm font-medium text-neutral-800">4,285</td>
-                    <td class="py-4 text-right text-sm text-neutral-600">52,341</td>
-                    <td class="py-4 text-right">
-                      <span class="text-sm font-medium text-neutral-800">8.2%</span>
-                    </td>
-                    <td class="py-4 text-right">
-                      <div class="flex items-center justify-end">
-                        <span class="text-sm font-medium text-green-600">3.2</span>
-                        <span class="material-icons text-green-600 text-sm ml-1">arrow_upward</span>
-                      </div>
-                    </td>
-                  </tr>
-                  <!-- Add more rows as needed -->
-                </tbody>
-              </table>
-            </div>
-          </div>
+      <!-- Performance Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+  <!-- Total Clicks -->
+  <div class="material-card bg-white p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-neutral-600 font-medium">Total Clicks</h3>
+      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times users clicked through to your site">
+        info_outline
+        <span class="tooltip-text">Number of times users clicked through to your site</span>
+      </span>
+    </div>
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-3xl font-bold text-neutral-800" id="totalClicks">--</p>
+        <div class="flex items-center mt-1">
+          <span id="clicksTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+          <span class="text-green-500 text-sm font-medium" id="clicksChange">--</span>
+          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
         </div>
-        <!-- Opportunities Tab -->
+      </div>
+      <!-- Example: Mini bar chart, can be dynamically generated or left static -->
+      <div class="h-12 flex items-end space-x-1" id="clicksMiniChart">
+        <!-- Optional: mini bars via JS or static placeholder -->
+      </div>
+    </div>
+  </div>
+  <!-- Total Impressions -->
+  <div class="material-card bg-white p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-neutral-600 font-medium">Total Impressions</h3>
+      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Number of times your site appeared in search results">
+        info_outline
+        <span class="tooltip-text">Number of times your site appeared in search results</span>
+      </span>
+    </div>
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-3xl font-bold text-neutral-800" id="totalImpressions">--</p>
+        <div class="flex items-center mt-1">
+          <span id="impressionsTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+          <span class="text-green-500 text-sm font-medium" id="impressionsChange">--</span>
+          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+        </div>
+      </div>
+      <div class="h-12 flex items-end space-x-1" id="impressionsMiniChart"></div>
+    </div>
+  </div>
+  <!-- Average CTR -->
+  <div class="material-card bg-white p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-neutral-600 font-medium">Average CTR</h3>
+      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Click-through rate: clicks divided by impressions">
+        info_outline
+        <span class="tooltip-text">Click-through rate: clicks divided by impressions</span>
+      </span>
+    </div>
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-3xl font-bold text-neutral-800" id="averageCTR">--</p>
+        <div class="flex items-center mt-1">
+          <span id="ctrTrendIcon" class="material-icons text-red-500 text-sm">arrow_downward</span>
+          <span class="text-red-500 text-sm font-medium" id="ctrChange">--</span>
+          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+        </div>
+      </div>
+      <div class="h-12 w-24 relative">
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
+          <circle id="ctrCircle" cx="50" cy="50" r="45" fill="none" stroke="#9c27b0" stroke-width="10" stroke-dasharray="282.7" stroke-dashoffset="262.5" transform="rotate(-90 50 50)" />
+          <text x="50" y="55" text-anchor="middle" font-size="20" font-weight="bold" fill="#9c27b0" id="ctrText">--</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- Average Position -->
+  <div class="material-card bg-white p-5">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-neutral-600 font-medium">Average Position</h3>
+      <span class="material-icons text-neutral-500 cursor-help has-tooltip" title="Average ranking position in search results">
+        info_outline
+        <span class="tooltip-text">Average ranking position in search results</span>
+      </span>
+    </div>
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-3xl font-bold text-neutral-800" id="averagePosition">--</p>
+        <div class="flex items-center mt-1">
+          <span id="positionTrendIcon" class="material-icons text-green-500 text-sm">arrow_upward</span>
+          <span class="text-green-500 text-sm font-medium" id="positionChange">--</span>
+          <span class="text-neutral-500 text-sm ml-1">vs previous period</span>
+        </div>
+      </div>
+      <div class="h-12 flex items-center">
+        <div class="flex items-center space-x-1" id="positionMiniChart"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Performing Pages Table -->
+<div class="material-card bg-white p-5 mb-8">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-medium text-neutral-800">Top Performing Pages</h3>
+    <button id="viewAllPagesBtn" class="material-btn">View All</button>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead>
+        <tr class="border-b border-neutral-200">
+          <th class="py-3 text-left text-sm font-medium text-neutral-500">Page</th>
+          <th class="py-3 text-right text-sm font-medium text-neutral-500">Clicks</th>
+          <th class="py-3 text-right text-sm font-medium text-neutral-500">Impressions</th>
+          <th class="py-3 text-right text-sm font-medium text-neutral-500">CTR</th>
+          <th class="py-3 text-right text-sm font-medium text-neutral-500">Position</th>
+        </tr>
+      </thead>
+      <tbody id="topPagesTable">
+        <!-- Table rows will be dynamically inserted here by JavaScript -->
+      </tbody>
+    </table>
+  </div>
+</div>
+        </div>
         <div id="opportunities" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">SEO Opportunities</h3>
             <button class="get-suggestions-btn material-btn" data-issue="SEO Opportunity">Get Suggestions</button>
           </div>
         </div>
-        <!-- Errors Tab -->
         <div id="errors" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Site Errors</h3>
@@ -484,14 +353,12 @@
             <button class="view-issues-btn material-btn" data-issue="Broken Links">View Issues</button>
           </div>
         </div>
-        <!-- Indexing Tab -->
         <div id="indexing" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Indexing Status</h3>
             <span class="status-indicator status-good"></span> All good!
           </div>
         </div>
-        <!-- Analytics Tab -->
         <div id="analytics" class="tab-content">
           <div class="material-card bg-white p-5 mb-8">
             <h3 class="text-lg font-medium text-neutral-800 mb-4">Analytics Overview</h3>
@@ -511,4 +378,210 @@
     </div>
   </div>
 </body>
+  <script>
+// ==== CONFIG: Set your deployed Apps Script endpoint here! ====
+const API_BASE = 'YOUR_SCRIPT_URL_HERE'; // Example: 'https://script.google.com/macros/s/AKfycb.../exec'
+
+// ==== Utility: Fetch Helper ====
+async function fetchAPI(path) {
+  const url = `${API_BASE}?path=${encodeURIComponent(path)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+// ==== Metrics Cards ====
+async function loadMetrics() {
+  try {
+    const data = await fetchAPI('metrics');
+    document.getElementById('totalClicks').textContent = data.totalClicks ?? '--';
+    document.getElementById('clicksChange').textContent = (data.clicksChange ?? '--') + '%';
+    document.getElementById('clicksTrendIcon').textContent = (data.clicksChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
+
+    document.getElementById('totalImpressions').textContent = data.totalImpressions ?? '--';
+    document.getElementById('impressionsChange').textContent = (data.impressionsChange ?? '--') + '%';
+    document.getElementById('impressionsTrendIcon').textContent = (data.impressionsChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
+
+    document.getElementById('averageCTR').textContent = (data.averageCTR ?? '--') + '%';
+    document.getElementById('ctrChange').textContent = (data.ctrChange ?? '--') + '%';
+    document.getElementById('ctrTrendIcon').textContent = (data.ctrChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
+
+    document.getElementById('averagePosition').textContent = data.averagePosition ?? '--';
+    document.getElementById('positionChange').textContent = data.positionChange ?? '--';
+    document.getElementById('positionTrendIcon').textContent = (data.positionChange ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward';
+
+    // Optional: Update SVG donut for CTR
+    if (typeof data.averageCTR === 'number') {
+      const percent = Math.max(0, Math.min(100, data.averageCTR));
+      const dasharray = 282.7;
+      const dashoffset = dasharray - (dasharray * percent) / 100;
+      document.getElementById('ctrCircle').setAttribute('stroke-dashoffset', dashoffset);
+      document.getElementById('ctrText').textContent = percent + '%';
+    }
+
+    // Optionally update mini charts if you wish
+    // document.getElementById('clicksMiniChart').innerHTML = ...
+  } catch (err) {
+    console.error('Failed to load metrics:', err);
+  }
+}
+
+// ==== Top Performing Pages Table ====
+async function loadTopPages() {
+  try {
+    const data = await fetchAPI('top-pages');
+    const tbody = document.getElementById('topPagesTable');
+    tbody.innerHTML = '';
+    data.topPages.forEach(page => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${page.Page || ''}</td>
+          <td class="text-right">${page.Clicks ?? '--'}</td>
+          <td class="text-right">${page.Impressions ?? '--'}</td>
+          <td class="text-right">${page.CTR ?? '--'}%</td>
+          <td class="text-right">${page.Position ?? '--'}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    document.getElementById('topPagesTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
+    console.error('Failed to load top pages:', err);
+  }
+}
+
+// ==== Top Keywords Table (add element with id="topKeywordsTable" in HTML) ====
+async function loadTopKeywords() {
+  try {
+    const data = await fetchAPI('top-keywords');
+    const tbody = document.getElementById('topKeywordsTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.topKeywords.forEach(kw => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${kw.Keyword || ''}</td>
+          <td class="text-right">${kw.Clicks ?? '--'}</td>
+          <td class="text-right">${kw.Impressions ?? '--'}</td>
+          <td class="text-right">${kw.CTR ?? '--'}%</td>
+          <td class="text-right">${kw.Position ?? '--'}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    if (document.getElementById('topKeywordsTable'))
+      document.getElementById('topKeywordsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
+    console.error('Failed to load top keywords:', err);
+  }
+}
+
+// ==== Opportunities Table/List (add element with id="opportunitiesTable" in HTML) ====
+async function loadOpportunities() {
+  try {
+    const data = await fetchAPI('opportunities');
+    const tbody = document.getElementById('opportunitiesTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.opportunities.forEach(opp => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${opp.Opportunity || ''}</td>
+          <td>${opp.Description || ''}</td>
+          <td>${opp.Priority || ''}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    if (document.getElementById('opportunitiesTable'))
+      document.getElementById('opportunitiesTable').innerHTML = '<tr><td colspan="3">Failed to load data</td></tr>';
+    console.error('Failed to load opportunities:', err);
+  }
+}
+
+// ==== Errors Table/List (add element with id="errorsTable" in HTML) ====
+async function loadErrors() {
+  try {
+    const data = await fetchAPI('errors');
+    const tbody = document.getElementById('errorsTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.errors.forEach(errObj => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${errObj.Error || ''}</td>
+          <td>${errObj.Description || ''}</td>
+          <td>${errObj.Page || ''}</td>
+          <td>${errObj.Status || ''}</td>
+          <td>${errObj.Fix || ''}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    if (document.getElementById('errorsTable'))
+      document.getElementById('errorsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
+    console.error('Failed to load errors:', err);
+  }
+}
+
+// ==== Indexing Table/List (add element with id="indexingTable" in HTML) ====
+async function loadIndexing() {
+  try {
+    const data = await fetchAPI('indexing');
+    const tbody = document.getElementById('indexingTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.indexing.forEach(idx => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${idx.Page || ''}</td>
+          <td>${idx.Status || ''}</td>
+          <td>${idx.LastCrawled || ''}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    if (document.getElementById('indexingTable'))
+      document.getElementById('indexingTable').innerHTML = '<tr><td colspan="3">Failed to load data</td></tr>';
+    console.error('Failed to load indexing:', err);
+  }
+}
+
+// ==== Analytics Table/List (add element with id="analyticsTable" in HTML) ====
+async function loadAnalytics() {
+  try {
+    const data = await fetchAPI('analytics');
+    const tbody = document.getElementById('analyticsTable');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    data.analytics.forEach(row => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${row.Date || ''}</td>
+          <td class="text-right">${row.Clicks ?? '--'}</td>
+          <td class="text-right">${row.Impressions ?? '--'}</td>
+          <td class="text-right">${row.CTR ?? '--'}%</td>
+          <td class="text-right">${row.Position ?? '--'}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    if (document.getElementById('analyticsTable'))
+      document.getElementById('analyticsTable').innerHTML = '<tr><td colspan="5">Failed to load data</td></tr>';
+    console.error('Failed to load analytics:', err);
+  }
+}
+
+
+// ==== INIT: Load All Data on Page Load ====
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadMetrics();
+  loadTopPages();
+  loadTopKeywords();
+  loadOpportunities();
+  loadErrors();
+  loadIndexing();
+  loadAnalytics();
+});
+
+</script>
 </html>
