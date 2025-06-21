@@ -81,94 +81,94 @@ function addNewSite() {
 }
 
 // Date Range Selector
-function selectDateRange(range) {
-  const buttons = document.querySelectorAll('.date-range-btn');
-  removeClassFromAll(buttons, 'bg-primary-600');
-  removeClassFromAll(buttons, 'text-white');
-  buttons.forEach(btn => btn.classList.add('bg-white', 'text-neutral-700', 'border', 'border-neutral-300'));
+//function selectDateRange(range) {
+//  const buttons = document.querySelectorAll('.date-range-btn');
+//  removeClassFromAll(buttons, 'bg-primary-600');
+ // removeClassFromAll(buttons, 'text-white');
+ // buttons.forEach(btn => btn.classList.add('bg-white', 'text-neutral-700', 'border', 'border-neutral-300'));
 
-  const activeBtn = document.querySelector(`.date-range-btn[data-range="${range}"]`);
-  activeBtn.classList.remove('bg-white', 'text-neutral-700', 'border', 'border-neutral-300');
-  activeBtn.classList.add('bg-primary-600', 'text-white');
+//  const activeBtn = document.querySelector(`.date-range-btn[data-range="${range}"]`);
+//  activeBtn.classList.remove('bg-white', 'text-neutral-700', 'border', 'border-neutral-300');
+//  activeBtn.classList.add('bg-primary-600', 'text-white');
 
   // Update date inputs
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - parseInt(range));
+//  const endDate = new Date();
+//  const startDate = new Date();
+//  startDate.setDate(endDate.getDate() - parseInt(range));
   
-  document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
-  document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+//  document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+//  document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
 }
 
-function toggleDatePicker(pickerId) {
-  const calendar = document.getElementById(pickerId);
-  toggleClass(calendar, 'show');
+//function toggleDatePicker(pickerId) {
+ // const calendar = document.getElementById(pickerId);
+ // toggleClass(calendar, 'show');
 }
 
-function navigateMonth(direction, calendarId) {
-  const monthYear = document.getElementById(`currentMonthYear${calendarId}`);
-  let [month, year] = monthYear.textContent.split(' ');
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  let monthIndex = months.indexOf(month);
-  let yearNum = parseInt(year);
+//function navigateMonth(direction, calendarId) {
+//  const monthYear = document.getElementById(`currentMonthYear${calendarId}`);
+  //let [month, year] = monthYear.textContent.split(' ');
+ // const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+//  let monthIndex = months.indexOf(month);
+//  let yearNum = parseInt(year);
+//
+//  if (direction === 'prev') {
+//    monthIndex--;
+  //  if (monthIndex < 0) {
+  //   monthIndex = 11;
+   //   yearNum--;
+   // }
+ // } else {
+  //  monthIndex++;
+  //  if (monthIndex > 11) {
+  //    monthIndex = 0;
+  //    yearNum++;
+  //  }
+//  }
 
-  if (direction === 'prev') {
-    monthIndex--;
-    if (monthIndex < 0) {
-      monthIndex = 11;
-      yearNum--;
-    }
-  } else {
-    monthIndex++;
-    if (monthIndex > 11) {
-      monthIndex = 0;
-      yearNum++;
-    }
-  }
+//  monthYear.textContent = `${months[monthIndex]} ${yearNum}`;
+//  updateCalendarDays(calendarId.toLowerCase(), monthIndex, yearNum);
+//}
 
-  monthYear.textContent = `${months[monthIndex]} ${yearNum}`;
-  updateCalendarDays(calendarId.toLowerCase(), monthIndex, yearNum);
-}
-
-function updateCalendarDays(calendarId, month, year) {
-  const daysContainer = document.getElementById(`${calendarId}Days`);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDay = new Date(year, month, 1).getDay();
-  daysContainer.innerHTML = '';
+//function updateCalendarDays(calendarId, month, year) {
+//  const daysContainer = document.getElementById(`${calendarId}Days`);
+//  const daysInMonth = new Date(year, month + 1, 0).getDate();
+//  const firstDay = new Date(year, month, 1).getDay();
+  // daysContainer.innerHTML = '';
 
   // Add empty days for alignment
-  for (let i = 0; i < firstDay; i++) {
-    daysContainer.innerHTML += '<div></div>';
-  }
+ // for (let i = 0; i < firstDay; i++) {
+  //  daysContainer.innerHTML += '<div></div>';
+ // }
 
   // Add days
-  for (let i = 1; i <= daysInMonth; i++) {
-    const today = new Date();
-    const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-    const isSelected = false; // Implement selection logic
-    daysContainer.innerHTML += `
-      <div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-day="${i}">
-        ${i}
-      </div>
-    `;
-  }
-}
+ // for (let i = 1; i <= daysInMonth; i++) {
+   // const today = new Date();
+//    const isToday = i === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+//    const isSelected = false; // Implement selection logic
+ //   daysContainer.innerHTML += `
+ //     <div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-day="${i}">
+ //       ${i}
+  //    </div>
+//    `;
+//  }
+//}
 
-function selectDay(day, calendarId) {
-  const input = document.getElementById(calendarId.replace('Calendar', ''));
-  const monthYear = document.getElementById(`currentMonthYear${calendarId}`).textContent;
-  const [month, year] = monthYear.split(' ');
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthIndex = months.indexOf(month).toString().padStart(2, '0');
-  input.value = `${year}-${monthIndex}-${day.padStart(2, '0')}`;
-  toggleDatePicker(calendarId);
-}
+// function selectDay(day, calendarId) {
+ // const input = document.getElementById(calendarId.replace('Calendar', ''));
+//  const monthYear = document.getElementById(`currentMonthYear${calendarId}`).textContent;
+//  const [month, year] = monthYear.split(' ');
+//  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+//  const monthIndex = months.indexOf(month).toString().padStart(2, '0');
+//  input.value = `${year}-${monthIndex}-${day.padStart(2, '0')}`;
+//  toggleDatePicker(calendarId);
+//}
 
-function applyDateRange() {
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
-  showModal(`<p class="text-sm text-neutral-600">Applying date range: ${startDate} to ${endDate}...</p>`);
-}
+//function applyDateRange() {
+//  const startDate = document.getElementById('startDate').value;
+ // const endDate = document.getElementById('endDate').value;
+//  showModal(`<p class="text-sm text-neutral-600">Applying date range: ${startDate} to ${endDate}...</p>`);
+//}
 
 // Tabs
 function switchTab(tabId) {
@@ -283,27 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('addNewSite').addEventListener('click', addNewSite);
 
-  // Date Range
-  document.querySelectorAll('.date-range-btn').forEach(btn => {
-    btn.addEventListener('click', () => selectDateRange(btn.dataset.range));
-  });
-  document.querySelector('#startDate + .material-icons').addEventListener('click', () => toggleDatePicker('startDateCalendar'));
-  document.querySelector('#endDate + .material-icons').addEventListener('click', () => toggleDatePicker('endDateCalendar'));
-  document.getElementById('prevMonthStart').addEventListener('click', () => navigateMonth('prev', 'Start'));
-  document.getElementById('nextMonthStart').addEventListener('click', () => navigateMonth('next', 'Start'));
-  document.getElementById('prevMonthEnd').addEventListener('click', () => navigateMonth('prev', 'End'));
-  document.getElementById('nextMonthEnd').addEventListener('click', () => navigateMonth('next', 'End'));
-  document.getElementById('startDateDays').addEventListener('click', (e) => {
-    if (e.target.classList.contains('calendar-day')) {
-      selectDay(e.target.dataset.day, 'startDateCalendar');
-    }
-  });
-  document.getElementById('endDateDays').addEventListener('click', (e) => {
-    if (e.target.classList.contains('calendar-day')) {
-      selectDay(e.target.dataset.day, 'endDateCalendar');
-    }
-  });
-  document.getElementById('applyDateRange').addEventListener('click', applyDateRange);
 
   // Tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -337,10 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => getSuggestions(btn.dataset.issue));
   });
 
-  // Initialize calendar
-  updateCalendarDays('startDate', new Date().getMonth(), new Date().getFullYear());
-  updateCalendarDays('endDate', new Date().getMonth(), new Date().getFullYear());
-});
+
 
 // Close dropdowns when clicking outside
 document.addEventListener('click', (e) => {
