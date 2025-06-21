@@ -19,6 +19,27 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Add before your main JS scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr">
+
+  document.addEventListener("DOMContentLoaded", function() {
+  flatpickr("#startDate", {
+    dateFormat: "Y-m-d",
+    maxDate: "today",
+    onChange: function(selectedDates, dateStr, instance) {
+      currentStartDate = dateStr;
+    }
+  });
+  flatpickr("#endDate", {
+    dateFormat: "Y-m-d",
+    maxDate: "today",
+    onChange: function(selectedDates, dateStr, instance) {
+      currentEndDate = dateStr;
+    }
+  });
+});
+</script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     /* Custom styles for the app can go here or in styles.css */
