@@ -18,9 +18,14 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe UI:wght@300;400;500;700&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Add before your main JS scripts -->
+ <!-- Flatpickr CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Chart.js (keep if you need it) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -1290,22 +1295,37 @@ document.getElementById("refreshDataBtn").addEventListener("click", function() {
   loadAllData();
 });
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr">
+ <script>
+let currentStartDate = '';
+let currentEndDate = '';
 
-  document.addEventListener("DOMContentLoaded", function() {
+// Initialize flatpickr for start and end dates
+document.addEventListener("DOMContentLoaded", function() {
   flatpickr("#startDate", {
     dateFormat: "Y-m-d",
     maxDate: "today",
-    onChange: function(selectedDates, dateStr, instance) {
+    defaultDate: currentStartDate || null,
+    onChange: function(selectedDates, dateStr) {
       currentStartDate = dateStr;
     }
   });
   flatpickr("#endDate", {
     dateFormat: "Y-m-d",
     maxDate: "today",
-    onChange: function(selectedDates, dateStr, instance) {
+    defaultDate: currentEndDate || null,
+    onChange: function(selectedDates, dateStr) {
       currentEndDate = dateStr;
     }
+  });
+
+  // Don't automatically load data on date change!
+  // Only refresh data when "Apply" is clicked:
+  document.getElementById("applyDateRange").addEventListener("click", function() {
+    // Get the latest values (in case user typed dates by hand)
+    currentStartDate = document.getElementById('startDate').value;
+    currentEndDate = document.getElementById('endDate').value;
+    // Now call your data loader (replace with your actual function)
+    loadAllData();
   });
 });
 </script>
