@@ -814,7 +814,12 @@
 // ==== CONFIG: Set your deployed Apps Script endpoint here! ====
 // IMPORTANT: Replace this with YOUR DEPLOYED APPS SCRIPT WEB APP URL.
 // Example: https://script.google.com/macros/s/AKfycb.../exec
-const API_BASE = 'https://script.google.com/macros/s/AKfycbwQ2jEJCTfEX1DzRolqnNGbKRVJmqRGHgk2bGPXKBPYMZX8y5K5PZ8FtIyQeGCdCkn_/exec'; // <--- REPLACE THIS LINE
+const API_BASE = 'https://script.google.com/macros/s/AKfycbwQ2jEJCTfEX1DzRolqnNGbKRVJmqRGHgk2bGPXKBPYMZX8y5K5PZ8FtIyQeGCdCkn_/exec';
+const startPicker = flatpickr("#startDate", { dateFormat: "Y-m-d" });
+const endPicker = flatpickr("#endDate", { dateFormat: "Y-m-d" });
+
+document.querySelector('#startDate').nextElementSibling.addEventListener('click', () => startPicker.open());
+document.querySelector('#endDate').nextElementSibling.addEventListener('click', () => endPicker.open());
 
 let currentSite = 'https://www.holisticgrowthmarketing.com/'; // Default GSC property URL (REPLACE with your domain)
 let currentStartDate = '';
